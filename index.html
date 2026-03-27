@@ -9,7 +9,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;padding:20px;line-height:1.5}
 .w{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:2px}
-.subtitle{font-size:12px;color:#73726c;margin-bottom:8px}
+.subtitle{font-size:12px;color:#73726c}
 .card{border:1px solid #e8e6df;border-radius:12px;padding:16px;background:#fff}
 .sec-title{font-size:10px;font-weight:600;color:#73726c;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
 .gmv-hero{text-align:center;padding:12px 0 8px}
@@ -24,8 +24,7 @@ h1{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:2px}
 .kpi-val{font-size:14px;font-weight:600;color:#1a1a18}
 .kpi-unit{font-size:9px;color:#73726c}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.sr{margin-bottom:10px}
-.sr:last-child{margin-bottom:0}
+.sr{margin-bottom:10px}.sr:last-child{margin-bottom:0}
 .sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
 .sn{font-size:11px;font-weight:600;color:#1a1a18}
 .sv{font-size:11px;font-weight:600;color:#1a1a18}
@@ -50,47 +49,75 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
 .dormant-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .dormant-badge{font-size:9px;color:#854F0B;background:#FAEEDA;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
 
-/* 保存・読み込み UI */
-.scenario-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.scenario-bar input[type=text]{flex:1;min-width:140px;padding:6px 10px;border:1px solid #e8e6df;border-radius:8px;font-size:12px;background:#f8f7f4;color:#1a1a18;outline:none}
-.scenario-bar input[type=text]:focus{border-color:#1D9E75}
-.btn{padding:6px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
-.btn-save{background:#1D9E75;color:#fff}
-.btn-save:hover{background:#0F6E56}
-.btn-del{background:#f8f7f4;border:1px solid #e8e6df;color:#993C1D}
-.btn-del:hover{background:#FAECE7}
-.btn-reset{background:#f8f7f4;border:1px solid #e8e6df;color:#73726c}
-.btn-reset:hover{background:#e8e6df}
+/* ツールバー */
+.toolbar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toolbar-row input[type=text]{flex:1;min-width:140px;padding:6px 10px;border:1px solid #e8e6df;border-radius:8px;font-size:12px;background:#f8f7f4;color:#1a1a18;outline:none}
+.toolbar-row input[type=text]:focus{border-color:#1D9E75}
+.btn{padding:6px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-save{background:#1D9E75;color:#fff}.btn-save:hover{background:#0F6E56}
+.btn-share{background:#534AB7;color:#fff}.btn-share:hover{background:#3C3489}
+.btn-share.copied{background:#0F6E56}
+.btn-cap{background:#185FA5;color:#fff}.btn-cap:hover{background:#0C447C}
+.btn-cap:disabled{background:#b4b2a9;cursor:not-allowed}
+.btn-reset{background:#f8f7f4;border:1px solid #e8e6df;color:#73726c}.btn-reset:hover{background:#e8e6df}
 .scenario-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .scenario-chip{display:flex;align-items:center;gap:4px;background:#f8f7f4;border:1px solid #e8e6df;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer;transition:border-color .15s}
 .scenario-chip:hover{border-color:#1D9E75;background:#E1F5EE}
-.scenario-chip .chip-del{font-size:10px;color:#b4b2a9;margin-left:2px;padding:0 2px}
-.scenario-chip .chip-del:hover{color:#993C1D}
 .scenario-chip.active{border-color:#1D9E75;background:#E1F5EE;font-weight:600}
+.chip-del{font-size:10px;color:#b4b2a9;margin-left:2px;padding:0 2px;cursor:pointer}.chip-del:hover{color:#993C1D}
 .empty-hint{font-size:11px;color:#b4b2a9;font-style:italic}
+
+/* URL共有バナー */
+.share-banner{display:none;margin-top:10px;padding:10px 12px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;font-size:11px;color:#3C3489}
+.share-banner.show{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.share-url{flex:1;font-family:monospace;font-size:10px;color:#534AB7;word-break:break-all;background:#fff;border:1px solid #AFA9EC;border-radius:6px;padding:4px 8px;user-select:all}
+
+/* トースト */
 .toast{position:fixed;bottom:20px;right:20px;background:#1a1a18;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1}
+
+/* キャプチャオーバーレイ */
+.cap-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.cap-overlay.show{display:flex}
+.cap-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+.cap-msg{color:#fff;font-size:13px;font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* URLから読み込んだ際のバッジ */
+.loaded-badge{display:none;font-size:11px;color:#0F6E56;background:#E1F5EE;border:1px solid #5DCAA5;border-radius:6px;padding:3px 10px;margin-top:8px}
+.loaded-badge.show{display:inline-block}
 </style>
 </head>
 <body>
-<div class="w">
-
+<div class="w" id="capture-root">
 <div>
   <h1>GMVシミュレーター — パートナーファネル動態モデル</h1>
   <div class="subtitle">S0〜S5ファネル × 既存ストック × チャーン × 休眠・復帰を統合した月次モデル（Q2〜Q4: 8ヶ月）</div>
+  <div class="loaded-badge" id="loaded-badge">🔗 URLからシナリオを読み込みました</div>
 </div>
 
-<!-- 保存・読み込み -->
-<div class="card">
-  <div class="sec-title">シナリオ保存・読み込み</div>
-  <div class="scenario-bar">
-    <input type="text" id="scenario-name" placeholder="シナリオ名を入力（例：楽観シナリオ）" maxlength="40">
+<!-- ツールバー -->
+<div class="card" id="toolbar-card">
+  <div class="sec-title">シナリオ保存・共有 / キャプチャ</div>
+  <div class="toolbar-row">
+    <input type="text" id="scenario-name" placeholder="シナリオ名（例：楽観シナリオ）" maxlength="40">
     <button class="btn btn-save" onclick="saveScenario()">保存</button>
+    <button class="btn btn-share" id="share-btn" onclick="copyShareURL()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="4" cy="8" r="1.5"/><line x1="10.5" y1="4.8" x2="5.5" y2="7.2"/><line x1="10.5" y1="11.2" x2="5.5" y2="8.8"/></svg>
+      URLをコピー
+    </button>
+    <button class="btn btn-cap" id="cap-btn" onclick="captureJPG()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="10" rx="2"/><circle cx="8" cy="9" r="2.5"/><path d="M5 4l1-2h4l1 2"/></svg>
+      JPGで保存
+    </button>
     <button class="btn btn-reset" onclick="resetDefaults()">リセット</button>
   </div>
-  <div class="scenario-list" id="scenario-list">
-    <span class="empty-hint">保存済みシナリオはありません</span>
+  <div class="share-banner" id="share-banner">
+    <span style="white-space:nowrap;font-weight:600">共有URL：</span>
+    <span class="share-url" id="share-url-text"></span>
+    <button class="btn btn-save" style="padding:4px 10px;font-size:11px" onclick="copyShareURL()">再コピー</button>
   </div>
+  <div class="scenario-list" id="scenario-list"><span class="empty-hint">保存済みシナリオはありません</span></div>
 </div>
 
 <!-- GMV結果 -->
@@ -184,7 +211,7 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
     <div class="sr"><div class="sh"><span class="sn">S3→S4/S5（月次転換率）</span><span class="sv"><span id="v-r34">40</span>%/月</span></div><input type="range" id="s-r34" min="1" max="80" step="1" value="40" oninput="calc()"></div>
     <div class="sr"><div class="sh"><span class="sn">S4→S5（月次転換率）</span><span class="sv"><span id="v-r45">5</span>%/月</span></div><input type="range" id="s-r45" min="0" max="30" step="1" value="5" oninput="calc()"></div>
     <div class="divider"></div>
-    <div class="sr"><div class="sh"><span class="sn" style="color:#854F0B">休眠A→S3 復帰率</span><span class="sv"><span id="v-rda">10</span>%/月</span></div><div class="sd">復帰施策の効果（稼働実績あり→立ち上がり早い）</div><input type="range" id="s-rda" min="0" max="50" step="1" value="10" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn" style="color:#854F0B">休眠A→S3 復帰率</span><span class="sv"><span id="v-rda">10</span>%/月</span></div><div class="sd">復帰施策の効果</div><input type="range" id="s-rda" min="0" max="50" step="1" value="10" oninput="calc()"></div>
     <div class="sr"><div class="sh"><span class="sn" style="color:#888780">休眠B→S0 復帰率</span><span class="sv"><span id="v-rdb">5</span>%/月</span></div><div class="sd">再アプローチによりS0に戻す</div><input type="range" id="s-rdb" min="0" max="30" step="1" value="5" oninput="calc()"></div>
   </div>
 </div>
@@ -197,7 +224,7 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
     <div class="sr"><div class="sh"><span class="sn">S4→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs4">5</span>%/月</span></div><div class="sd">定常稼働から休眠化</div><input type="range" id="s-cs4" min="0" max="30" step="1" value="5" oninput="calc()"></div>
     <div class="sr"><div class="sh"><span class="sn">S3→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs3">20</span>%/月</span></div><div class="sd">初稼働で定着できず休眠化</div><input type="range" id="s-cs3" min="0" max="60" step="1" value="20" oninput="calc()"></div>
     <div class="sr"><div class="sh"><span class="sn">S0/S2→休眠B 離脱率</span><span class="sv" style="color:#888780"><span id="v-cdb">5</span>%/月</span></div><div class="sd">稼働前に音沙汰なし→休眠B化</div><input type="range" id="s-cdb" min="0" max="30" step="1" value="5" oninput="calc()"></div>
-    <p class="note">※ 休眠A=稼働実績あり、休眠B=稼働実績なし。完全離脱はなくすべて休眠に蓄積。</p>
+    <p class="note">※ 完全離脱はなくすべて休眠に蓄積。</p>
   </div>
   <div class="card">
     <div class="sec-title">GMVレバー / パートナー生産性</div>
@@ -211,117 +238,131 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
   </div>
 </div>
 
+<div style="font-size:10px;color:#b4b2a9;text-align:right;padding:2px 0" id="cap-footer"></div>
 </div>
 
+<div class="cap-overlay" id="cap-overlay">
+  <div class="cap-spinner"></div>
+  <div class="cap-msg">キャプチャ中...</div>
+</div>
 <div id="toast" class="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const SLIDER_IDS=['es5','es4','es3','es2','es0','eda','edb','ns0','r02','r23','r34','r45','d54','cs3','cs4','cs5','cdb','rda','rdb','target','price','approve','a3','a4','a5'];
+const DEFAULTS={es5:10,es4:40,es3:20,es2:15,es0:30,eda:20,edb:10,ns0:5,r02:20,r23:30,r34:40,r45:5,d54:10,cs3:20,cs4:5,cs5:3,cdb:5,rda:10,rdb:5,target:24,price:3,approve:30,a3:5,a4:15,a5:30};
 const STORAGE_KEY='gmv_scenarios';
 
 function n(id){return document.getElementById(id)}
 function rv(id){return +n('s-'+id).value}
 function r(v){return Math.max(0,Math.round(v))}
 
-// --- シナリオ保存・読み込み ---
-function getScenarios(){
-  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');}catch(e){return{};}
-}
-function setScenarios(data){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
-
-function currentValues(){
-  const vals={};
-  SLIDER_IDS.forEach(id=>vals[id]=rv(id));
-  return vals;
-}
-
-function applyValues(vals){
-  SLIDER_IDS.forEach(id=>{
-    if(vals[id]!==undefined){
-      const el=n('s-'+id);
-      if(el){el.value=vals[id];}
-    }
-  });
-  calc();
-}
+/* --- シナリオ保存 --- */
+function getScenarios(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch(e){return{}}}
+function setScenarios(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
+function currentValues(){const v={};SLIDER_IDS.forEach(id=>v[id]=rv(id));return v}
+function applyValues(vals){SLIDER_IDS.forEach(id=>{if(vals[id]!==undefined){const el=n('s-'+id);if(el)el.value=vals[id]}});calc()}
 
 function saveScenario(){
   const name=n('scenario-name').value.trim();
-  if(!name){showToast('シナリオ名を入力してください');return;}
-  const scenarios=getScenarios();
-  scenarios[name]=currentValues();
-  setScenarios(scenarios);
-  renderScenarioList(name);
-  showToast('「'+name+'」を保存しました');
+  if(!name){showToast('シナリオ名を入力してください');return}
+  const s=getScenarios();s[name]=currentValues();setScenarios(s);
+  renderScenarioList(name);showToast('「'+name+'」を保存しました')
 }
-
 function loadScenario(name){
-  const scenarios=getScenarios();
-  if(scenarios[name]){
-    applyValues(scenarios[name]);
-    n('scenario-name').value=name;
-    renderScenarioList(name);
-    showToast('「'+name+'」を読み込みました');
-  }
+  const s=getScenarios();
+  if(s[name]){applyValues(s[name]);n('scenario-name').value=name;renderScenarioList(name);showToast('「'+name+'」を読み込みました')}
 }
-
 function deleteScenario(name){
-  const scenarios=getScenarios();
-  delete scenarios[name];
-  setScenarios(scenarios);
+  const s=getScenarios();delete s[name];setScenarios(s);
   if(n('scenario-name').value===name)n('scenario-name').value='';
-  renderScenarioList(null);
-  showToast('「'+name+'」を削除しました');
+  renderScenarioList(null);showToast('「'+name+'」を削除しました')
 }
-
 function resetDefaults(){
-  const defaults={es5:10,es4:40,es3:20,es2:15,es0:30,eda:20,edb:10,ns0:5,r02:20,r23:30,r34:40,r45:5,d54:10,cs3:20,cs4:5,cs5:3,cdb:5,rda:10,rdb:5,target:24,price:3,approve:30,a3:5,a4:15,a5:30};
-  applyValues(defaults);
-  n('scenario-name').value='';
-  renderScenarioList(null);
-  showToast('デフォルト値にリセットしました');
+  applyValues(DEFAULTS);n('scenario-name').value='';renderScenarioList(null);
+  n('share-banner').classList.remove('show');
+  showToast('デフォルト値にリセットしました')
 }
-
 function renderScenarioList(activeName){
-  const scenarios=getScenarios();
-  const names=Object.keys(scenarios);
-  const container=n('scenario-list');
-  if(names.length===0){
-    container.innerHTML='<span class="empty-hint">保存済みシナリオはありません</span>';
-    return;
-  }
-  container.innerHTML=names.map(name=>`
-    <div class="scenario-chip${name===activeName?' active':''}" onclick="loadScenario('${name.replace(/'/g,"\\'")}')">
-      <span>${name}</span>
-      <span class="chip-del" onclick="event.stopPropagation();deleteScenario('${name.replace(/'/g,"\\'")}')">✕</span>
-    </div>
-  `).join('');
+  const s=getScenarios(),names=Object.keys(s),c=n('scenario-list');
+  if(!names.length){c.innerHTML='<span class="empty-hint">保存済みシナリオはありません</span>';return}
+  c.innerHTML=names.map(name=>`<div class="scenario-chip${name===activeName?' active':''}" onclick="loadScenario('${name.replace(/'/g,"\\'")}')">${name}<span class="chip-del" onclick="event.stopPropagation();deleteScenario('${name.replace(/'/g,"\\'")}')">✕</span></div>`).join('')
 }
 
-function showToast(msg){
-  const t=n('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
+/* --- URL共有 --- */
+function buildShareURL(){
+  const params=new URLSearchParams();
+  SLIDER_IDS.forEach(id=>params.set(id,rv(id)));
+  const sname=n('scenario-name').value.trim();
+  if(sname)params.set('sname',sname);
+  return location.origin+location.pathname+'?'+params.toString();
 }
 
-// --- シミュレーション ---
-function calc(){
-  const target=rv('target'), price=rv('price'), apr=rv('approve')/100;
-  const a3=rv('a3'), a4=rv('a4'), a5=rv('a5');
-  const es0=rv('es0'),es2=rv('es2'),es3=rv('es3'),es4=rv('es4'),es5=rv('es5');
-  const eda=rv('eda'),edb=rv('edb');
-  const ns0=rv('ns0');
-  const ro2=rv('r02')/100,r23=rv('r23')/100,r34=rv('r34')/100,r45=rv('r45')/100;
-  const d54=rv('d54')/100;
-  const cs3=rv('cs3')/100,cs4=rv('cs4')/100,cs5=rv('cs5')/100;
-  const cdb=rv('cdb')/100;
-  const rda=rv('rda')/100,rdb=rv('rdb')/100;
-
-  SLIDER_IDS.forEach(id=>{
-    const el=n('v-'+id);
-    if(el)el.textContent=rv(id);
+function copyShareURL(){
+  const url=buildShareURL();
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=n('share-btn');
+    btn.classList.add('copied');
+    btn.textContent='コピーしました！';
+    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="4" cy="8" r="1.5"/><line x1="10.5" y1="4.8" x2="5.5" y2="7.2"/><line x1="10.5" y1="11.2" x2="5.5" y2="8.8"/></svg>URLをコピー'},2000);
+    n('share-url-text').textContent=url;
+    n('share-banner').classList.add('show');
+    showToast('URLをクリップボードにコピーしました');
+  }).catch(()=>{
+    n('share-url-text').textContent=url;
+    n('share-banner').classList.add('show');
+    showToast('URLを手動でコピーしてください');
   });
+}
+
+function loadFromURL(){
+  const params=new URLSearchParams(location.search);
+  if(!params.has(SLIDER_IDS[0]))return;
+  const vals={};
+  SLIDER_IDS.forEach(id=>{if(params.has(id))vals[id]=parseFloat(params.get(id))});
+  applyValues(vals);
+  const sname=params.get('sname');
+  if(sname)n('scenario-name').value=sname;
+  n('loaded-badge').classList.add('show');
+  showToast('URLからシナリオを読み込みました');
+}
+
+/* --- JPGキャプチャ --- */
+async function captureJPG(){
+  const btn=n('cap-btn');btn.disabled=true;
+  const now=new Date(),pad=v=>String(v).padStart(2,'0');
+  const stamp=`${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())} キャプチャ`;
+  const sname=n('scenario-name').value.trim();
+  n('cap-footer').textContent=(sname?'シナリオ：'+sname+'　':'')+stamp;
+  n('toolbar-card').style.display='none';
+  n('cap-overlay').classList.add('show');
+  try{
+    await new Promise(res=>setTimeout(res,150));
+    const canvas=await html2canvas(n('capture-root'),{scale:2,useCORS:true,backgroundColor:'#f8f7f4',logging:false,windowWidth:1000});
+    const link=document.createElement('a');
+    const fname=`gmv-simulator${sname?'-'+sname:''}-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}.jpg`;
+    link.download=fname;link.href=canvas.toDataURL('image/jpeg',0.92);link.click();
+    showToast('JPGをダウンロードしました');
+  }catch(e){showToast('キャプチャに失敗しました');console.error(e);}
+  finally{
+    n('cap-overlay').classList.remove('show');
+    n('toolbar-card').style.display='';
+    n('cap-footer').textContent='';btn.disabled=false;
+  }
+}
+
+function showToast(msg){const t=n('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* --- シミュレーション --- */
+function calc(){
+  const target=rv('target'),price=rv('price'),apr=rv('approve')/100;
+  const a3=rv('a3'),a4=rv('a4'),a5=rv('a5');
+  const es0=rv('es0'),es2=rv('es2'),es3=rv('es3'),es4=rv('es4'),es5=rv('es5');
+  const eda=rv('eda'),edb=rv('edb'),ns0=rv('ns0');
+  const ro2=rv('r02')/100,r23=rv('r23')/100,r34=rv('r34')/100,r45=rv('r45')/100;
+  const d54=rv('d54')/100,cs3=rv('cs3')/100,cs4=rv('cs4')/100,cs5=rv('cs5')/100;
+  const cdb=rv('cdb')/100,rda=rv('rda')/100,rdb=rv('rdb')/100;
+  SLIDER_IDS.forEach(id=>{const el=n('v-'+id);if(el)el.textContent=rv(id)});
 
   let s0=es0,s2=es2,s3=es3,s4=es4,s5=es5,da=eda,db=edb;
   let totalGMV=0,totalChurn=0,exGMV=0;
@@ -332,30 +373,19 @@ function calc(){
     s0+=ns0;
     const retDA=r(da*rda),retDB=r(db*rdb);
     da-=retDA;db-=retDB;s3+=retDA;s0+=retDB;
-    const c02=r(s0*ro2),c23=r(s2*r23),c34=r(s3*r34),c45=r(s4*r45);
-    const down54=r(s5*d54);
-    const ch3=r(s3*cs3),ch4=r(s4*cs4),ch5=r(s5*cs5);
-    const chDB=r((s0+s2)*cdb);
-    s0=Math.max(0,r(s0-c02-chDB/2));
-    s2=Math.max(0,r(s2+c02-c23-chDB/2));
-    s3=Math.max(0,r(s3+c23-c34-ch3));
-    s4=Math.max(0,r(s4+c34+down54-c45-ch4));
-    s5=Math.max(0,r(s5+c45-down54-ch5));
-    da=Math.max(0,r(da+ch3+ch4+ch5));
-    db=Math.max(0,r(db+chDB));
+    const c02=r(s0*ro2),c23=r(s2*r23),c34=r(s3*r34),c45=r(s4*r45),down54=r(s5*d54);
+    const ch3=r(s3*cs3),ch4=r(s4*cs4),ch5=r(s5*cs5),chDB=r((s0+s2)*cdb);
+    s0=Math.max(0,r(s0-c02-chDB/2));s2=Math.max(0,r(s2+c02-c23-chDB/2));
+    s3=Math.max(0,r(s3+c23-c34-ch3));s4=Math.max(0,r(s4+c34+down54-c45-ch4));
+    s5=Math.max(0,r(s5+c45-down54-ch5));da=Math.max(0,r(da+ch3+ch4+ch5));db=Math.max(0,r(db+chDB));
     totalChurn+=(ch3+ch4+ch5);
-
-    const exRetDA=r(exDA*rda);
-    exDA-=exRetDA;exS3+=exRetDA;
+    const exRetDA=r(exDA*rda);exDA-=exRetDA;exS3+=exRetDA;
     const exDown=r(exS5*d54),exCh3=r(exS3*cs3),exCh4=r(exS4*cs4),exCh5=r(exS5*cs5);
-    const exC34=r(exS3*r34),exC45=r(exS4*r45);
-    exS3=Math.max(0,r(exS3+exC34-exCh3));
-    exS4=Math.max(0,r(exS4+exDown-exC45-exCh4));
-    exS5=Math.max(0,r(exS5+exC45-exDown-exCh5));
+    exS3=Math.max(0,r(exS3+r(exS3*r34)-exCh3));
+    exS4=Math.max(0,r(exS4+exDown-r(exS4*r45)-exCh4));
+    exS5=Math.max(0,r(exS5+r(exS4*r45)-exDown-exCh5));
     exDA=Math.max(0,r(exDA+exCh3+exCh4+exCh5));
-
-    const monthAppo=s3*a3+s4*a4+s5*a5;
-    const monthGMV=monthAppo*apr*price;
+    const monthAppo=s3*a3+s4*a4+s5*a5,monthGMV=monthAppo*apr*price;
     const exMonthGMV=(exS3*a3+exS4*a4+exS5*a5)*apr*price;
     totalGMV+=monthGMV;exGMV+=exMonthGMV;
     rows.push({m:months[m],s3:r(s3),s4:r(s4),s5:r(s5),da:r(da),db:r(db),appo:r(monthAppo),gmv:r(monthGMV)});
@@ -363,35 +393,24 @@ function calc(){
 
   const annualGMV=totalGMV/1e4,exAnnualGMV=exGMV/1e4,newGMV=annualGMV-exAnnualGMV;
   const lastRow=rows[rows.length-1];
-
   n('gmv-num').textContent=annualGMV.toFixed(2)+' 億円';
   const gap=annualGMV-target;
   n('gmv-gap').textContent=gap>=0?'▲ 目標を '+Math.abs(gap).toFixed(2)+' 億円 上回る':'▼ 目標まで '+Math.abs(gap).toFixed(2)+' 億円 不足';
   n('gmv-gap').style.color=gap>=0?'#0F6E56':'#993C1D';
   const p=Math.min((annualGMV/target)*100,100);
-  n('prog').style.width=p+'%';
-  n('prog').style.background=p>=100?'#1D9E75':p>=70?'#BA7517':'#D85A30';
+  n('prog').style.width=p+'%';n('prog').style.background=p>=100?'#1D9E75':p>=70?'#BA7517':'#D85A30';
   n('prog-lbl').textContent=(annualGMV/target*100).toFixed(1)+'% 達成見込み（目標: '+target+'億円）';
-  n('gmv-ex').textContent=exAnnualGMV.toFixed(2)+' 億円';
-  n('gmv-new').textContent=newGMV.toFixed(2)+' 億円';
+  n('gmv-ex').textContent=exAnnualGMV.toFixed(2)+' 億円';n('gmv-new').textContent=newGMV.toFixed(2)+' 億円';
   n('gmv-ex-pct').textContent=annualGMV>0?r(exAnnualGMV/annualGMV*100)+'%':'－';
   n('gmv-new-pct').textContent=annualGMV>0?r(newGMV/annualGMV*100)+'%':'－';
   n('k-act').textContent=(lastRow.s3+lastRow.s4+lastRow.s5).toLocaleString();
-  n('k-da').textContent=lastRow.da.toLocaleString();
-  n('k-db').textContent=lastRow.db.toLocaleString();
-  n('k-appo').textContent=lastRow.appo.toLocaleString();
-  n('k-churn').textContent=totalChurn.toLocaleString();
+  n('k-da').textContent=lastRow.da.toLocaleString();n('k-db').textContent=lastRow.db.toLocaleString();
+  n('k-appo').textContent=lastRow.appo.toLocaleString();n('k-churn').textContent=totalChurn.toLocaleString();
   n('k-mgmv').textContent=lastRow.gmv.toLocaleString();
-  n('sm-s0').textContent=r(s0);
-  n('sm-s2').textContent=r(s2);
-  n('sm-s3').textContent=lastRow.s3;
-  n('sm-s4').textContent=lastRow.s4;
-  n('sm-s5').textContent=lastRow.s5;
-  n('sm-da').textContent=lastRow.da;
-  n('sm-db').textContent=lastRow.db;
-
-  const tbody=n('tbl-body');
-  tbody.innerHTML='';
+  n('sm-s0').textContent=r(s0);n('sm-s2').textContent=r(s2);
+  n('sm-s3').textContent=lastRow.s3;n('sm-s4').textContent=lastRow.s4;n('sm-s5').textContent=lastRow.s5;
+  n('sm-da').textContent=lastRow.da;n('sm-db').textContent=lastRow.db;
+  const tbody=n('tbl-body');tbody.innerHTML='';
   rows.forEach(row=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${row.m}</td><td style="color:#BA7517">${row.s3}</td><td>${row.s4}</td><td style="color:#0F6E56">${row.s5}</td><td style="color:#854F0B">${row.da}</td><td style="color:#888780">${row.db}</td><td>${row.appo.toLocaleString()}</td><td>${row.gmv.toLocaleString()}</td>`;
@@ -402,8 +421,9 @@ function calc(){
   tbody.appendChild(sumTr);
 }
 
-// 初期化
+/* --- 初期化 --- */
 renderScenarioList(null);
+loadFromURL(); // URLパラメータがあれば読み込み
 calc();
 </script>
 </body>
