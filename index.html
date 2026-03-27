@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;padding:20px;line-height:1.5}
 .w{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-h1{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:4px}
+h1{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:2px}
 .subtitle{font-size:12px;color:#73726c;margin-bottom:8px}
 .card{border:1px solid #e8e6df;border-radius:12px;padding:16px;background:#fff}
 .sec-title{font-size:10px;font-weight:600;color:#73726c;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
@@ -24,7 +24,6 @@ h1{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:4px}
 .kpi-val{font-size:14px;font-weight:600;color:#1a1a18}
 .kpi-unit{font-size:9px;color:#73726c}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .sr{margin-bottom:10px}
 .sr:last-child{margin-bottom:0}
 .sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
@@ -50,6 +49,27 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
 .sm-arr{display:flex;align-items:center;justify-content:center;padding-top:16px;color:#b4b2a9;font-size:12px}
 .dormant-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .dormant-badge{font-size:9px;color:#854F0B;background:#FAEEDA;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+
+/* 保存・読み込み UI */
+.scenario-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.scenario-bar input[type=text]{flex:1;min-width:140px;padding:6px 10px;border:1px solid #e8e6df;border-radius:8px;font-size:12px;background:#f8f7f4;color:#1a1a18;outline:none}
+.scenario-bar input[type=text]:focus{border-color:#1D9E75}
+.btn{padding:6px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-save{background:#1D9E75;color:#fff}
+.btn-save:hover{background:#0F6E56}
+.btn-del{background:#f8f7f4;border:1px solid #e8e6df;color:#993C1D}
+.btn-del:hover{background:#FAECE7}
+.btn-reset{background:#f8f7f4;border:1px solid #e8e6df;color:#73726c}
+.btn-reset:hover{background:#e8e6df}
+.scenario-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.scenario-chip{display:flex;align-items:center;gap:4px;background:#f8f7f4;border:1px solid #e8e6df;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer;transition:border-color .15s}
+.scenario-chip:hover{border-color:#1D9E75;background:#E1F5EE}
+.scenario-chip .chip-del{font-size:10px;color:#b4b2a9;margin-left:2px;padding:0 2px}
+.scenario-chip .chip-del:hover{color:#993C1D}
+.scenario-chip.active{border-color:#1D9E75;background:#E1F5EE;font-weight:600}
+.empty-hint{font-size:11px;color:#b4b2a9;font-style:italic}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a18;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -57,9 +77,23 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
 
 <div>
   <h1>GMVシミュレーター — パートナーファネル動態モデル</h1>
-  <div class="subtitle">S0〜S5のファネル × 既存ストック × チャーン × 休眠・復帰を統合した月次モデル（Q2〜Q4: 8ヶ月）</div>
+  <div class="subtitle">S0〜S5ファネル × 既存ストック × チャーン × 休眠・復帰を統合した月次モデル（Q2〜Q4: 8ヶ月）</div>
 </div>
 
+<!-- 保存・読み込み -->
+<div class="card">
+  <div class="sec-title">シナリオ保存・読み込み</div>
+  <div class="scenario-bar">
+    <input type="text" id="scenario-name" placeholder="シナリオ名を入力（例：楽観シナリオ）" maxlength="40">
+    <button class="btn btn-save" onclick="saveScenario()">保存</button>
+    <button class="btn btn-reset" onclick="resetDefaults()">リセット</button>
+  </div>
+  <div class="scenario-list" id="scenario-list">
+    <span class="empty-hint">保存済みシナリオはありません</span>
+  </div>
+</div>
+
+<!-- GMV結果 -->
 <div class="card">
   <div class="gmv-hero">
     <div style="font-size:11px;color:#73726c;margin-bottom:3px">予測GMV（年間・動態モデル）</div>
@@ -90,6 +124,7 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
   </div>
 </div>
 
+<!-- ファネル -->
 <div class="card">
   <div class="sec-title">期末ステージ分布（全パートナー）</div>
   <div class="stage-map">
@@ -117,6 +152,7 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
   </div>
 </div>
 
+<!-- 月次推移 -->
 <div class="card">
   <div class="sec-title">月次推移（Q2〜Q4）</div>
   <div style="overflow-x:auto">
@@ -177,37 +213,128 @@ input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
 
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script>
+const SLIDER_IDS=['es5','es4','es3','es2','es0','eda','edb','ns0','r02','r23','r34','r45','d54','cs3','cs4','cs5','cdb','rda','rdb','target','price','approve','a3','a4','a5'];
+const STORAGE_KEY='gmv_scenarios';
+
 function n(id){return document.getElementById(id)}
+function rv(id){return +n('s-'+id).value}
 function r(v){return Math.max(0,Math.round(v))}
 
+// --- シナリオ保存・読み込み ---
+function getScenarios(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');}catch(e){return{};}
+}
+function setScenarios(data){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
+
+function currentValues(){
+  const vals={};
+  SLIDER_IDS.forEach(id=>vals[id]=rv(id));
+  return vals;
+}
+
+function applyValues(vals){
+  SLIDER_IDS.forEach(id=>{
+    if(vals[id]!==undefined){
+      const el=n('s-'+id);
+      if(el){el.value=vals[id];}
+    }
+  });
+  calc();
+}
+
+function saveScenario(){
+  const name=n('scenario-name').value.trim();
+  if(!name){showToast('シナリオ名を入力してください');return;}
+  const scenarios=getScenarios();
+  scenarios[name]=currentValues();
+  setScenarios(scenarios);
+  renderScenarioList(name);
+  showToast('「'+name+'」を保存しました');
+}
+
+function loadScenario(name){
+  const scenarios=getScenarios();
+  if(scenarios[name]){
+    applyValues(scenarios[name]);
+    n('scenario-name').value=name;
+    renderScenarioList(name);
+    showToast('「'+name+'」を読み込みました');
+  }
+}
+
+function deleteScenario(name){
+  const scenarios=getScenarios();
+  delete scenarios[name];
+  setScenarios(scenarios);
+  if(n('scenario-name').value===name)n('scenario-name').value='';
+  renderScenarioList(null);
+  showToast('「'+name+'」を削除しました');
+}
+
+function resetDefaults(){
+  const defaults={es5:10,es4:40,es3:20,es2:15,es0:30,eda:20,edb:10,ns0:5,r02:20,r23:30,r34:40,r45:5,d54:10,cs3:20,cs4:5,cs5:3,cdb:5,rda:10,rdb:5,target:24,price:3,approve:30,a3:5,a4:15,a5:30};
+  applyValues(defaults);
+  n('scenario-name').value='';
+  renderScenarioList(null);
+  showToast('デフォルト値にリセットしました');
+}
+
+function renderScenarioList(activeName){
+  const scenarios=getScenarios();
+  const names=Object.keys(scenarios);
+  const container=n('scenario-list');
+  if(names.length===0){
+    container.innerHTML='<span class="empty-hint">保存済みシナリオはありません</span>';
+    return;
+  }
+  container.innerHTML=names.map(name=>`
+    <div class="scenario-chip${name===activeName?' active':''}" onclick="loadScenario('${name.replace(/'/g,"\\'")}')">
+      <span>${name}</span>
+      <span class="chip-del" onclick="event.stopPropagation();deleteScenario('${name.replace(/'/g,"\\'")}')">✕</span>
+    </div>
+  `).join('');
+}
+
+function showToast(msg){
+  const t=n('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// --- シミュレーション ---
 function calc(){
-  const target=+n('s-target').value, price=+n('s-price').value, apr=+n('s-approve').value/100;
-  const a3=+n('s-a3').value, a4=+n('s-a4').value, a5=+n('s-a5').value;
-  const es0=+n('s-es0').value, es2=+n('s-es2').value, es3=+n('s-es3').value, es4=+n('s-es4').value, es5=+n('s-es5').value;
-  const eda=+n('s-eda').value, edb=+n('s-edb').value;
-  const ns0=+n('s-ns0').value;
-  const ro2=+n('s-r02').value/100, r23=+n('s-r23').value/100, r34=+n('s-r34').value/100, r45=+n('s-r45').value/100;
-  const d54=+n('s-d54').value/100;
-  const cs3=+n('s-cs3').value/100, cs4=+n('s-cs4').value/100, cs5=+n('s-cs5').value/100;
-  const cdb=+n('s-cdb').value/100;
-  const rda=+n('s-rda').value/100, rdb=+n('s-rdb').value/100;
+  const target=rv('target'), price=rv('price'), apr=rv('approve')/100;
+  const a3=rv('a3'), a4=rv('a4'), a5=rv('a5');
+  const es0=rv('es0'),es2=rv('es2'),es3=rv('es3'),es4=rv('es4'),es5=rv('es5');
+  const eda=rv('eda'),edb=rv('edb');
+  const ns0=rv('ns0');
+  const ro2=rv('r02')/100,r23=rv('r23')/100,r34=rv('r34')/100,r45=rv('r45')/100;
+  const d54=rv('d54')/100;
+  const cs3=rv('cs3')/100,cs4=rv('cs4')/100,cs5=rv('cs5')/100;
+  const cdb=rv('cdb')/100;
+  const rda=rv('rda')/100,rdb=rv('rdb')/100;
 
-  const ids=['es0','es2','es3','es4','es5','eda','edb','ns0','r02','r23','r34','r45','d54','cs3','cs4','cs5','cdb','rda','rdb','target','price','approve','a3','a4','a5'];
-  ids.forEach(id=>{const el=n('v-'+id);if(el)el.textContent=+n('s-'+id).value;});
+  SLIDER_IDS.forEach(id=>{
+    const el=n('v-'+id);
+    if(el)el.textContent=rv(id);
+  });
 
-  let s0=es0, s2=es2, s3=es3, s4=es4, s5=es5, da=eda, db=edb;
-  let totalGMV=0, totalChurn=0, exGMV=0;
-  let exS3=es3, exS4=es4, exS5=es5, exDA=eda;
-  const rows=[], months=['4月','5月','6月','7月','8月','9月','10月','11月'];
+  let s0=es0,s2=es2,s3=es3,s4=es4,s5=es5,da=eda,db=edb;
+  let totalGMV=0,totalChurn=0,exGMV=0;
+  let exS3=es3,exS4=es4,exS5=es5,exDA=eda;
+  const rows=[],months=['4月','5月','6月','7月','8月','9月','10月','11月'];
 
   for(let m=0;m<8;m++){
     s0+=ns0;
-    const retDA=r(da*rda), retDB=r(db*rdb);
-    da-=retDA; db-=retDB; s3+=retDA; s0+=retDB;
-    const c02=r(s0*ro2), c23=r(s2*r23), c34=r(s3*r34), c45=r(s4*r45);
+    const retDA=r(da*rda),retDB=r(db*rdb);
+    da-=retDA;db-=retDB;s3+=retDA;s0+=retDB;
+    const c02=r(s0*ro2),c23=r(s2*r23),c34=r(s3*r34),c45=r(s4*r45);
     const down54=r(s5*d54);
-    const ch3=r(s3*cs3), ch4=r(s4*cs4), ch5=r(s5*cs5);
+    const ch3=r(s3*cs3),ch4=r(s4*cs4),ch5=r(s5*cs5);
     const chDB=r((s0+s2)*cdb);
     s0=Math.max(0,r(s0-c02-chDB/2));
     s2=Math.max(0,r(s2+c02-c23-chDB/2));
@@ -219,9 +346,9 @@ function calc(){
     totalChurn+=(ch3+ch4+ch5);
 
     const exRetDA=r(exDA*rda);
-    exDA-=exRetDA; exS3+=exRetDA;
-    const exDown=r(exS5*d54), exCh3=r(exS3*cs3), exCh4=r(exS4*cs4), exCh5=r(exS5*cs5);
-    const exC34=r(exS3*r34), exC45=r(exS4*r45);
+    exDA-=exRetDA;exS3+=exRetDA;
+    const exDown=r(exS5*d54),exCh3=r(exS3*cs3),exCh4=r(exS4*cs4),exCh5=r(exS5*cs5);
+    const exC34=r(exS3*r34),exC45=r(exS4*r45);
     exS3=Math.max(0,r(exS3+exC34-exCh3));
     exS4=Math.max(0,r(exS4+exDown-exC45-exCh4));
     exS5=Math.max(0,r(exS5+exC45-exDown-exCh5));
@@ -230,11 +357,11 @@ function calc(){
     const monthAppo=s3*a3+s4*a4+s5*a5;
     const monthGMV=monthAppo*apr*price;
     const exMonthGMV=(exS3*a3+exS4*a4+exS5*a5)*apr*price;
-    totalGMV+=monthGMV; exGMV+=exMonthGMV;
+    totalGMV+=monthGMV;exGMV+=exMonthGMV;
     rows.push({m:months[m],s3:r(s3),s4:r(s4),s5:r(s5),da:r(da),db:r(db),appo:r(monthAppo),gmv:r(monthGMV)});
   }
 
-  const annualGMV=totalGMV/1e4, exAnnualGMV=exGMV/1e4, newGMV=annualGMV-exAnnualGMV;
+  const annualGMV=totalGMV/1e4,exAnnualGMV=exGMV/1e4,newGMV=annualGMV-exAnnualGMV;
   const lastRow=rows[rows.length-1];
 
   n('gmv-num').textContent=annualGMV.toFixed(2)+' 億円';
@@ -274,6 +401,9 @@ function calc(){
   sumTr.innerHTML=`<td>累計</td><td>－</td><td>－</td><td>－</td><td>－</td><td>－</td><td>－</td><td style="color:#0F6E56">${r(totalGMV).toLocaleString()}</td>`;
   tbody.appendChild(sumTr);
 }
+
+// 初期化
+renderScenarioList(null);
 calc();
 </script>
 </body>
