@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMVシミュレーター v4 — パートナーファネル動態モデル</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;padding:20px;line-height:1.5}
+.w{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:4px}
+.subtitle{font-size:12px;color:#73726c;margin-bottom:8px}
+.card{border:1px solid #e8e6df;border-radius:12px;padding:16px;background:#fff}
+.sec-title{font-size:10px;font-weight:600;color:#73726c;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.gmv-hero{text-align:center;padding:12px 0 8px}
+.gmv-num{font-size:36px;font-weight:600;color:#1a1a18;line-height:1}
+.gmv-gap{font-size:12px;margin-top:4px}
+.prog-wrap{height:6px;background:#e8e6df;border-radius:3px;overflow:hidden;margin:10px 0 3px}
+.prog{height:100%;border-radius:3px;transition:width .25s,background .25s}
+.prog-lbl{font-size:11px;color:#73726c;text-align:right}
+.kpi6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
+.kpi{background:#f8f7f4;border:1px solid #e8e6df;border-radius:8px;padding:8px 4px;text-align:center}
+.kpi-lbl{font-size:9px;color:#73726c;margin-bottom:3px;line-height:1.3}
+.kpi-val{font-size:14px;font-weight:600;color:#1a1a18}
+.kpi-unit{font-size:9px;color:#73726c}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.sr{margin-bottom:10px}
+.sr:last-child{margin-bottom:0}
+.sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.sn{font-size:11px;font-weight:600;color:#1a1a18}
+.sv{font-size:11px;font-weight:600;color:#1a1a18}
+.sd{font-size:10px;color:#73726c;margin-bottom:3px}
+input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
+.divider{height:1px;background:#e8e6df;margin:8px 0}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{font-weight:600;color:#73726c;padding:5px 6px;text-align:right;border-bottom:1px solid #e8e6df;white-space:nowrap;background:#f8f7f4}
+.tbl th:first-child{text-align:left}
+.tbl td{padding:5px 6px;color:#1a1a18;border-bottom:1px solid #e8e6df;text-align:right}
+.tbl td:first-child{text-align:left;color:#73726c}
+.tbl tr:last-child td{border-bottom:none;font-weight:600;background:#f8f7f4}
+.gmv-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.gmv-part{border-radius:10px;padding:12px;text-align:center;border:1px solid #e8e6df}
+.note{font-size:10px;color:#73726c;margin-top:8px;font-style:italic}
+.stage-map{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr;gap:4px;align-items:start}
+.sm-box{border-radius:8px;padding:8px 4px;text-align:center;border:1px solid #e8e6df;background:#f8f7f4}
+.sm-lbl{font-size:9px;color:#73726c;line-height:1.3;margin-bottom:4px}
+.sm-val{font-size:14px;font-weight:600}
+.sm-unit{font-size:9px;color:#73726c}
+.sm-arr{display:flex;align-items:center;justify-content:center;padding-top:16px;color:#b4b2a9;font-size:12px}
+.dormant-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.dormant-badge{font-size:9px;color:#854F0B;background:#FAEEDA;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="w">
+
+<div>
+  <h1>GMVシミュレーター — パートナーファネル動態モデル</h1>
+  <div class="subtitle">S0〜S5のファネル × 既存ストック × チャーン × 休眠・復帰を統合した月次モデル（Q2〜Q4: 8ヶ月）</div>
+</div>
+
+<div class="card">
+  <div class="gmv-hero">
+    <div style="font-size:11px;color:#73726c;margin-bottom:3px">予測GMV（年間・動態モデル）</div>
+    <div class="gmv-num" id="gmv-num">－</div>
+    <div class="gmv-gap" id="gmv-gap"></div>
+  </div>
+  <div class="prog-wrap"><div class="prog" id="prog" style="width:0%"></div></div>
+  <div class="prog-lbl" id="prog-lbl"></div>
+  <div class="gmv-split">
+    <div class="gmv-part" style="background:#E6F1FB">
+      <div style="font-size:10px;color:#185FA5;margin-bottom:3px">既存パートナー由来</div>
+      <div style="font-size:18px;font-weight:600;color:#185FA5" id="gmv-ex">－</div>
+      <div style="font-size:10px;color:#185FA5" id="gmv-ex-pct"></div>
+    </div>
+    <div class="gmv-part" style="background:#E1F5EE">
+      <div style="font-size:10px;color:#0F6E56;margin-bottom:3px">新規フロー由来</div>
+      <div style="font-size:18px;font-weight:600;color:#0F6E56" id="gmv-new">－</div>
+      <div style="font-size:10px;color:#0F6E56" id="gmv-new-pct"></div>
+    </div>
+  </div>
+  <div class="kpi6">
+    <div class="kpi"><div class="kpi-lbl">期末稼働P（S3〜5）</div><div class="kpi-val" id="k-act">－</div><div class="kpi-unit">社</div></div>
+    <div class="kpi"><div class="kpi-lbl">期末休眠A（実績あり）</div><div class="kpi-val" id="k-da" style="color:#854F0B">－</div><div class="kpi-unit">社</div></div>
+    <div class="kpi"><div class="kpi-lbl">期末休眠B（実績なし）</div><div class="kpi-val" id="k-db" style="color:#888780">－</div><div class="kpi-unit">社</div></div>
+    <div class="kpi"><div class="kpi-lbl">月間商談数（期末）</div><div class="kpi-val" id="k-appo">－</div><div class="kpi-unit">件/月</div></div>
+    <div class="kpi"><div class="kpi-lbl">累計チャーン→休眠</div><div class="kpi-val" id="k-churn" style="color:#D85A30">－</div><div class="kpi-unit">社</div></div>
+    <div class="kpi"><div class="kpi-lbl">月間GMV（期末）</div><div class="kpi-val" id="k-mgmv">－</div><div class="kpi-unit">万円</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="sec-title">期末ステージ分布（全パートナー）</div>
+  <div class="stage-map">
+    <div class="sm-box"><div class="sm-lbl">S0<br>登録のみ</div><div class="sm-val" id="sm-s0">－</div><div class="sm-unit">社</div></div>
+    <div class="sm-arr">→</div>
+    <div class="sm-box"><div class="sm-lbl">S2<br>マッチング</div><div class="sm-val" id="sm-s2">－</div><div class="sm-unit">社</div></div>
+    <div class="sm-arr">→</div>
+    <div class="sm-box"><div class="sm-lbl">S3<br>初稼働</div><div class="sm-val" id="sm-s3" style="color:#BA7517">－</div><div class="sm-unit">社</div></div>
+    <div class="sm-arr">→</div>
+    <div class="sm-box"><div class="sm-lbl">S4<br>定常</div><div class="sm-val" id="sm-s4">－</div><div class="sm-unit">社</div></div>
+    <div class="sm-arr">→</div>
+    <div class="sm-box" style="border-color:#1D9E75"><div class="sm-lbl">S5<br>拡張</div><div class="sm-val" id="sm-s5" style="color:#0F6E56">－</div><div class="sm-unit">社</div></div>
+  </div>
+  <div class="dormant-row">
+    <div class="sm-box" style="border-color:#BA7517">
+      <div class="sm-lbl">休眠A（稼働実績あり）</div>
+      <div class="sm-val" id="sm-da" style="color:#854F0B">－</div><div class="sm-unit">社</div>
+      <div class="dormant-badge">復帰施策の対象</div>
+    </div>
+    <div class="sm-box">
+      <div class="sm-lbl">休眠B（稼働実績なし）</div>
+      <div class="sm-val" id="sm-db" style="color:#888780">－</div><div class="sm-unit">社</div>
+      <div style="font-size:9px;color:#73726c;margin-top:3px">再アプローチ or 切り捨て判断</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="sec-title">月次推移（Q2〜Q4）</div>
+  <div style="overflow-x:auto">
+  <table class="tbl">
+    <thead><tr><th>月</th><th>S3</th><th>S4</th><th>S5</th><th>休眠A</th><th>休眠B</th><th>月アポ</th><th>GMV(万)</th></tr></thead>
+    <tbody id="tbl-body"></tbody>
+  </table>
+  </div>
+  <p class="note">※ 休眠A＝稼働実績あり（S3以上から離脱）、休眠B＝稼働実績なし（S0/S2止まり）</p>
+</div>
+
+<div class="two">
+  <div class="card">
+    <div class="sec-title">期初ストック（既存パートナー）</div>
+    <div class="sr"><div class="sh"><span class="sn">既存S5（拡張）</span><span class="sv" style="color:#185FA5"><span id="v-es5">10</span>社</span></div><input type="range" id="s-es5" min="0" max="100" step="5" value="10" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">既存S4（定常稼働）</span><span class="sv" style="color:#185FA5"><span id="v-es4">40</span>社</span></div><input type="range" id="s-es4" min="0" max="200" step="5" value="40" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">既存S3（初稼働）</span><span class="sv" style="color:#185FA5"><span id="v-es3">20</span>社</span></div><input type="range" id="s-es3" min="0" max="100" step="5" value="20" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">既存S2（マッチング）</span><span class="sv" style="color:#185FA5"><span id="v-es2">15</span>社</span></div><input type="range" id="s-es2" min="0" max="100" step="5" value="15" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">既存S0（登録のみ）</span><span class="sv" style="color:#185FA5"><span id="v-es0">30</span>社</span></div><input type="range" id="s-es0" min="0" max="200" step="5" value="30" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">既存 休眠A（実績あり）</span><span class="sv" style="color:#854F0B"><span id="v-eda">20</span>社</span></div><input type="range" id="s-eda" min="0" max="100" step="5" value="20" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">既存 休眠B（実績なし）</span><span class="sv" style="color:#888780"><span id="v-edb">10</span>社</span></div><input type="range" id="s-edb" min="0" max="100" step="5" value="10" oninput="calc()"></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">新規フロー・転換率</div>
+    <div class="sr"><div class="sh"><span class="sn">月次新規登録数</span><span class="sv" style="color:#1D9E75"><span id="v-ns0">5</span>社/月</span></div><div class="sd">施策A・Dによる毎月の新規登録</div><input type="range" id="s-ns0" min="0" max="50" step="1" value="5" oninput="calc()"></div>
+    <div class="divider"></div>
+    <div class="sr"><div class="sh"><span class="sn">S0→S2（月次転換率）</span><span class="sv"><span id="v-r02">20</span>%/月</span></div><input type="range" id="s-r02" min="1" max="50" step="1" value="20" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S2→S3（月次転換率）</span><span class="sv"><span id="v-r23">30</span>%/月</span></div><input type="range" id="s-r23" min="1" max="80" step="1" value="30" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S3→S4/S5（月次転換率）</span><span class="sv"><span id="v-r34">40</span>%/月</span></div><input type="range" id="s-r34" min="1" max="80" step="1" value="40" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S4→S5（月次転換率）</span><span class="sv"><span id="v-r45">5</span>%/月</span></div><input type="range" id="s-r45" min="0" max="30" step="1" value="5" oninput="calc()"></div>
+    <div class="divider"></div>
+    <div class="sr"><div class="sh"><span class="sn" style="color:#854F0B">休眠A→S3 復帰率</span><span class="sv"><span id="v-rda">10</span>%/月</span></div><div class="sd">復帰施策の効果（稼働実績あり→立ち上がり早い）</div><input type="range" id="s-rda" min="0" max="50" step="1" value="10" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn" style="color:#888780">休眠B→S0 復帰率</span><span class="sv"><span id="v-rdb">5</span>%/月</span></div><div class="sd">再アプローチによりS0に戻す</div><input type="range" id="s-rdb" min="0" max="30" step="1" value="5" oninput="calc()"></div>
+  </div>
+</div>
+
+<div class="two">
+  <div class="card">
+    <div class="sec-title">離脱・ダウングレード率（月次）</div>
+    <div class="sr"><div class="sh"><span class="sn">S5→S4 ダウングレード率</span><span class="sv" style="color:#BA7517"><span id="v-d54">10</span>%/月</span></div><div class="sd">拡張が止まり定常稼働に戻る</div><input type="range" id="s-d54" min="0" max="40" step="1" value="10" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S5→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs5">3</span>%/月</span></div><div class="sd">拡張から完全停止→休眠A化</div><input type="range" id="s-cs5" min="0" max="20" step="1" value="3" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S4→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs4">5</span>%/月</span></div><div class="sd">定常稼働から休眠化</div><input type="range" id="s-cs4" min="0" max="30" step="1" value="5" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S3→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs3">20</span>%/月</span></div><div class="sd">初稼働で定着できず休眠化</div><input type="range" id="s-cs3" min="0" max="60" step="1" value="20" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S0/S2→休眠B 離脱率</span><span class="sv" style="color:#888780"><span id="v-cdb">5</span>%/月</span></div><div class="sd">稼働前に音沙汰なし→休眠B化</div><input type="range" id="s-cdb" min="0" max="30" step="1" value="5" oninput="calc()"></div>
+    <p class="note">※ 休眠A=稼働実績あり、休眠B=稼働実績なし。完全離脱はなくすべて休眠に蓄積。</p>
+  </div>
+  <div class="card">
+    <div class="sec-title">GMVレバー / パートナー生産性</div>
+    <div class="sr"><div class="sh"><span class="sn">目標GMV</span><span class="sv"><span id="v-target">24</span>億円</span></div><input type="range" id="s-target" min="5" max="50" step="1" value="24" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">平均単価</span><span class="sv"><span id="v-price">3</span>万円</span></div><div class="sd">1商談あたりの手数料込み単価</div><input type="range" id="s-price" min="1" max="20" step="0.5" value="3" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">承認率</span><span class="sv"><span id="v-approve">30</span>%</span></div><div class="sd">登録商談のうち承認される割合</div><input type="range" id="s-approve" min="5" max="90" step="1" value="30" oninput="calc()"></div>
+    <div class="divider"></div>
+    <div class="sr"><div class="sh"><span class="sn">S3 月間アポ/社</span><span class="sv" style="color:#BA7517"><span id="v-a3">5</span>件</span></div><div class="sd">初稼働（立ち上がり期）</div><input type="range" id="s-a3" min="1" max="40" step="1" value="5" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S4 月間アポ/社</span><span class="sv"><span id="v-a4">15</span>件</span></div><div class="sd">定常稼働</div><input type="range" id="s-a4" min="1" max="80" step="1" value="15" oninput="calc()"></div>
+    <div class="sr"><div class="sh"><span class="sn">S5 月間アポ/社</span><span class="sv" style="color:#0F6E56"><span id="v-a5">30</span>件</span></div><div class="sd">拡張稼働</div><input type="range" id="s-a5" min="1" max="150" step="1" value="30" oninput="calc()"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function n(id){return document.getElementById(id)}
+function r(v){return Math.max(0,Math.round(v))}
+
+function calc(){
+  const target=+n('s-target').value, price=+n('s-price').value, apr=+n('s-approve').value/100;
+  const a3=+n('s-a3').value, a4=+n('s-a4').value, a5=+n('s-a5').value;
+  const es0=+n('s-es0').value, es2=+n('s-es2').value, es3=+n('s-es3').value, es4=+n('s-es4').value, es5=+n('s-es5').value;
+  const eda=+n('s-eda').value, edb=+n('s-edb').value;
+  const ns0=+n('s-ns0').value;
+  const ro2=+n('s-r02').value/100, r23=+n('s-r23').value/100, r34=+n('s-r34').value/100, r45=+n('s-r45').value/100;
+  const d54=+n('s-d54').value/100;
+  const cs3=+n('s-cs3').value/100, cs4=+n('s-cs4').value/100, cs5=+n('s-cs5').value/100;
+  const cdb=+n('s-cdb').value/100;
+  const rda=+n('s-rda').value/100, rdb=+n('s-rdb').value/100;
+
+  const ids=['es0','es2','es3','es4','es5','eda','edb','ns0','r02','r23','r34','r45','d54','cs3','cs4','cs5','cdb','rda','rdb','target','price','approve','a3','a4','a5'];
+  ids.forEach(id=>{const el=n('v-'+id);if(el)el.textContent=+n('s-'+id).value;});
+
+  let s0=es0, s2=es2, s3=es3, s4=es4, s5=es5, da=eda, db=edb;
+  let totalGMV=0, totalChurn=0, exGMV=0;
+  let exS3=es3, exS4=es4, exS5=es5, exDA=eda;
+  const rows=[], months=['4月','5月','6月','7月','8月','9月','10月','11月'];
+
+  for(let m=0;m<8;m++){
+    s0+=ns0;
+    const retDA=r(da*rda), retDB=r(db*rdb);
+    da-=retDA; db-=retDB; s3+=retDA; s0+=retDB;
+    const c02=r(s0*ro2), c23=r(s2*r23), c34=r(s3*r34), c45=r(s4*r45);
+    const down54=r(s5*d54);
+    const ch3=r(s3*cs3), ch4=r(s4*cs4), ch5=r(s5*cs5);
+    const chDB=r((s0+s2)*cdb);
+    s0=Math.max(0,r(s0-c02-chDB/2));
+    s2=Math.max(0,r(s2+c02-c23-chDB/2));
+    s3=Math.max(0,r(s3+c23-c34-ch3));
+    s4=Math.max(0,r(s4+c34+down54-c45-ch4));
+    s5=Math.max(0,r(s5+c45-down54-ch5));
+    da=Math.max(0,r(da+ch3+ch4+ch5));
+    db=Math.max(0,r(db+chDB));
+    totalChurn+=(ch3+ch4+ch5);
+
+    const exRetDA=r(exDA*rda);
+    exDA-=exRetDA; exS3+=exRetDA;
+    const exDown=r(exS5*d54), exCh3=r(exS3*cs3), exCh4=r(exS4*cs4), exCh5=r(exS5*cs5);
+    const exC34=r(exS3*r34), exC45=r(exS4*r45);
+    exS3=Math.max(0,r(exS3+exC34-exCh3));
+    exS4=Math.max(0,r(exS4+exDown-exC45-exCh4));
+    exS5=Math.max(0,r(exS5+exC45-exDown-exCh5));
+    exDA=Math.max(0,r(exDA+exCh3+exCh4+exCh5));
+
+    const monthAppo=s3*a3+s4*a4+s5*a5;
+    const monthGMV=monthAppo*apr*price;
+    const exMonthGMV=(exS3*a3+exS4*a4+exS5*a5)*apr*price;
+    totalGMV+=monthGMV; exGMV+=exMonthGMV;
+    rows.push({m:months[m],s3:r(s3),s4:r(s4),s5:r(s5),da:r(da),db:r(db),appo:r(monthAppo),gmv:r(monthGMV)});
+  }
+
+  const annualGMV=totalGMV/1e4, exAnnualGMV=exGMV/1e4, newGMV=annualGMV-exAnnualGMV;
+  const lastRow=rows[rows.length-1];
+
+  n('gmv-num').textContent=annualGMV.toFixed(2)+' 億円';
+  const gap=annualGMV-target;
+  n('gmv-gap').textContent=gap>=0?'▲ 目標を '+Math.abs(gap).toFixed(2)+' 億円 上回る':'▼ 目標まで '+Math.abs(gap).toFixed(2)+' 億円 不足';
+  n('gmv-gap').style.color=gap>=0?'#0F6E56':'#993C1D';
+  const p=Math.min((annualGMV/target)*100,100);
+  n('prog').style.width=p+'%';
+  n('prog').style.background=p>=100?'#1D9E75':p>=70?'#BA7517':'#D85A30';
+  n('prog-lbl').textContent=(annualGMV/target*100).toFixed(1)+'% 達成見込み（目標: '+target+'億円）';
+  n('gmv-ex').textContent=exAnnualGMV.toFixed(2)+' 億円';
+  n('gmv-new').textContent=newGMV.toFixed(2)+' 億円';
+  n('gmv-ex-pct').textContent=annualGMV>0?r(exAnnualGMV/annualGMV*100)+'%':'－';
+  n('gmv-new-pct').textContent=annualGMV>0?r(newGMV/annualGMV*100)+'%':'－';
+  n('k-act').textContent=(lastRow.s3+lastRow.s4+lastRow.s5).toLocaleString();
+  n('k-da').textContent=lastRow.da.toLocaleString();
+  n('k-db').textContent=lastRow.db.toLocaleString();
+  n('k-appo').textContent=lastRow.appo.toLocaleString();
+  n('k-churn').textContent=totalChurn.toLocaleString();
+  n('k-mgmv').textContent=lastRow.gmv.toLocaleString();
+  n('sm-s0').textContent=r(s0);
+  n('sm-s2').textContent=r(s2);
+  n('sm-s3').textContent=lastRow.s3;
+  n('sm-s4').textContent=lastRow.s4;
+  n('sm-s5').textContent=lastRow.s5;
+  n('sm-da').textContent=lastRow.da;
+  n('sm-db').textContent=lastRow.db;
+
+  const tbody=n('tbl-body');
+  tbody.innerHTML='';
+  rows.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${row.m}</td><td style="color:#BA7517">${row.s3}</td><td>${row.s4}</td><td style="color:#0F6E56">${row.s5}</td><td style="color:#854F0B">${row.da}</td><td style="color:#888780">${row.db}</td><td>${row.appo.toLocaleString()}</td><td>${row.gmv.toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  });
+  const sumTr=document.createElement('tr');
+  sumTr.innerHTML=`<td>累計</td><td>－</td><td>－</td><td>－</td><td>－</td><td>－</td><td>－</td><td style="color:#0F6E56">${r(totalGMV).toLocaleString()}</td>`;
+  tbody.appendChild(sumTr);
+}
+calc();
+</script>
+</body>
+</html>
