@@ -2,381 +2,523 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GMVシミュレーター v4 — パートナーファネル動態モデル</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GMV予測モデル v7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;padding:20px;line-height:1.5}
-#login-screen{position:fixed;inset:0;background:#f8f7f4;display:flex;align-items:center;justify-content:center;z-index:9999}
-.login-card{background:#fff;border:1px solid #e8e6df;border-radius:16px;padding:40px 36px;width:360px;text-align:center}
-.login-logo{font-size:22px;font-weight:700;color:#1a1a18;margin-bottom:4px}
-.login-sub{font-size:12px;color:#73726c;margin-bottom:28px}
-.login-field{margin-bottom:14px;text-align:left}
-.login-field label{font-size:11px;font-weight:600;color:#73726c;display:block;margin-bottom:4px}
-.login-field input{width:100%;padding:9px 12px;border:1px solid #e8e6df;border-radius:8px;font-size:13px;color:#1a1a18;outline:none;transition:border-color .15s}
-.login-field input:focus{border-color:#1D9E75}
-.login-btn{width:100%;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;transition:background .15s}
-.login-btn:hover{background:#0F6E56}
-.login-error{font-size:11px;color:#D85A30;margin-top:10px;min-height:16px}
-#app{display:none}
-.w{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.w{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .card{border:1px solid #e8e6df;border-radius:12px;padding:16px;background:#fff}
-.sec-title{font-size:10px;font-weight:600;color:#73726c;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
-.gmv-hero{text-align:center;padding:12px 0 8px}
-.gmv-num{font-size:36px;font-weight:600;color:#1a1a18;line-height:1}
-.gmv-gap{font-size:12px;margin-top:4px}
-.prog-wrap{height:6px;background:#e8e6df;border-radius:3px;overflow:hidden;margin:10px 0 3px}
-.prog{height:100%;border-radius:3px;transition:width .25s,background .25s}
-.prog-lbl{font-size:11px;color:#73726c;text-align:right}
-.kpi6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
-.kpi{background:#f8f7f4;border:1px solid #e8e6df;border-radius:8px;padding:8px 4px;text-align:center}
-.kpi-lbl{font-size:9px;color:#73726c;margin-bottom:3px;line-height:1.3}
-.kpi-val{font-size:14px;font-weight:600;color:#1a1a18}
-.kpi-unit{font-size:9px;color:#73726c}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.sr{margin-bottom:10px}.sr:last-child{margin-bottom:0}
-.sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
-.sn{font-size:11px;font-weight:600;color:#1a1a18}
-.sv{font-size:11px;font-weight:600;color:#1a1a18}
-.sd{font-size:10px;color:#73726c;margin-bottom:3px}
-input[type=range]{width:100%;height:4px;accent-color:#1D9E75;cursor:pointer}
+.ct{font-size:10px;font-weight:600;color:#73726c;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:#f8f7f4;border-radius:8px;padding:10px 8px;text-align:center;border:1px solid #e8e6df}
+.kl{font-size:9px;color:#73726c;margin-bottom:3px;line-height:1.3}
+.kv{font-size:17px;font-weight:600;color:#1a1a18}
+.ks{font-size:9px;color:#73726c;margin-top:2px}
+/* 分布 */
+.dist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dist-card{border:1px solid #e8e6df;border-radius:8px;padding:12px}
+.dist-head{font-size:11px;font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between}
+.stat-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;border-bottom:1px solid #f1efe8}
+.stat-row:last-child{border-bottom:none}
+.stat-key{color:#73726c}
+.stat-val{font-weight:600}
+.warn-badge{display:inline-block;background:#FAECE7;color:#712B13;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:600;margin-left:3px}
+.star-badge{display:inline-block;background:#E1F5EE;color:#085041;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:600;margin-left:3px}
+/* ツールバー */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar input[type=text]{flex:1;min-width:160px;padding:6px 10px;border:1px solid #e8e6df;border-radius:8px;font-size:12px;color:#1a1a18;background:#fff;outline:none}
+.toolbar input[type=text]:focus{border-color:#1D9E75}
+.btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;white-space:nowrap;transition:background .15s}
+.btn-green{background:#1D9E75;color:#fff}.btn-green:hover{background:#0F6E56}
+.btn-blue{background:#185FA5;color:#fff}.btn-blue:hover{background:#0C447C}
+.btn-purple{background:#534AB7;color:#fff}.btn-purple:hover{background:#3C3489}
+.btn-gray{background:#f8f7f4;color:#1a1a18;border:1px solid #e8e6df}.btn-gray:hover{background:#e8e6df}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{display:flex;align-items:center;gap:5px;background:#f8f7f4;border:1px solid #e8e6df;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer;transition:border-color .15s}
+.chip:hover{border-color:#1D9E75;background:#E1F5EE}
+.chip.active{border-color:#1D9E75;background:#E1F5EE;font-weight:600}
+.chip-del{font-size:10px;color:#b4b2a9;padding:0 2px;cursor:pointer}.chip-del:hover{color:#993C1D}
+.empty-hint{font-size:11px;color:#b4b2a9;font-style:italic}
+.share-url-box{display:none;margin-top:10px;padding:8px 12px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;font-size:10px;color:#534AB7;font-family:monospace;word-break:break-all;cursor:text;user-select:all}
+/* タブ */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #e8e6df;background:#f8f7f4;color:#73726c;transition:all .15s}
+.tab.active-median{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.tab.active-bull{background:#185FA5;color:#fff;border-color:#185FA5}
+.tab.active-bear{background:#D85A30;color:#fff;border-color:#D85A30}
+.tab.active-custom{background:#534AB7;color:#fff;border-color:#534AB7}
+.scenario-desc{padding:8px 12px;border-radius:8px;font-size:11px;margin-bottom:14px;line-height:1.6}
+.desc-median{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5}
+.desc-bull{background:#E6F1FB;color:#185FA5;border:1px solid #85B7EB}
+.desc-bear{background:#FAECE7;color:#993C1D;border:1px solid #F0997B}
+.desc-custom{background:#EEEDFE;color:#3C3489;border:1px solid #AFA9EC}
+/* スライダー */
+.slider-section{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.slider-group{border:1px solid #e8e6df;border-radius:8px;padding:10px}
+.sg-title{font-size:10px;font-weight:600;color:#73726c;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.sl-row{margin-bottom:8px}
+.sl-row:last-child{margin-bottom:0}
+.sl-label{font-size:11px;font-weight:600;display:flex;justify-content:space-between;margin-bottom:1px}
+.sl-label span{color:#185FA5}
+.sl-hint{font-size:9px;color:#73726c;margin-bottom:2px}
+.actual-val{font-size:9px;color:#0F6E56;background:#E1F5EE;padding:1px 5px;border-radius:3px;margin-left:4px}
+input[type=range]{width:100%;height:4px;accent-color:#1D9E75}
 .divider{height:1px;background:#e8e6df;margin:8px 0}
+/* テーブル */
 .tbl{width:100%;border-collapse:collapse;font-size:11px}
-.tbl th{font-weight:600;color:#73726c;padding:5px 6px;text-align:right;border-bottom:1px solid #e8e6df;white-space:nowrap;background:#f8f7f4}
-.tbl th:first-child{text-align:left}
-.tbl td{padding:5px 6px;color:#1a1a18;border-bottom:1px solid #e8e6df;text-align:right}
-.tbl td:first-child{text-align:left;color:#73726c}
-.tbl tr:last-child td{border-bottom:none;font-weight:600;background:#f8f7f4}
-.gmv-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.gmv-part{border-radius:10px;padding:12px;text-align:center;border:1px solid #e8e6df}
-.note{font-size:10px;color:#73726c;margin-top:8px;font-style:italic}
-.stage-map{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr;gap:4px;align-items:start}
-.sm-box{border-radius:8px;padding:8px 4px;text-align:center;border:1px solid #e8e6df;background:#f8f7f4}
-.sm-lbl{font-size:9px;color:#73726c;line-height:1.3;margin-bottom:4px}
-.sm-val{font-size:14px;font-weight:600}
-.sm-unit{font-size:9px;color:#73726c}
-.sm-arr{display:flex;align-items:center;justify-content:center;padding-top:16px;color:#b4b2a9;font-size:12px}
-.dormant-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.dormant-badge{font-size:9px;color:#854F0B;background:#FAEEDA;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
-.save-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.save-bar input[type=text]{flex:1;min-width:160px;padding:6px 10px;border:1px solid #e8e6df;border-radius:8px;font-size:12px;color:#1a1a18;background:#fff;outline:none}
-.save-bar input[type=text]:focus{border-color:#1D9E75}
-.btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:background .15s;white-space:nowrap}
-.btn-primary{background:#1D9E75;color:#fff}.btn-primary:hover{background:#0F6E56}
-.btn-secondary{background:#f8f7f4;color:#1a1a18;border:1px solid #e8e6df}.btn-secondary:hover{background:#e8e6df}
-.btn-danger{background:#FAECE7;color:#993C1D;border:1px solid #F5C4B3;padding:4px 10px;font-size:11px}.btn-danger:hover{background:#F5C4B3}
-.btn-load{background:#E6F1FB;color:#185FA5;border:1px solid #B5D4F4;padding:4px 10px;font-size:11px}.btn-load:hover{background:#B5D4F4}
-.btn-logout{background:#f8f7f4;color:#73726c;border:1px solid #e8e6df;padding:5px 12px;font-size:11px}.btn-logout:hover{background:#e8e6df}
-.saves-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.save-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8f7f4;border:1px solid #e8e6df;border-radius:8px}
-.save-item-name{flex:1;font-size:12px;font-weight:600;color:#1a1a18}
-.save-item-date{font-size:10px;color:#73726c;white-space:nowrap;margin-right:4px}
-.empty-state{font-size:12px;color:#73726c;text-align:center;padding:16px 0;background:#f8f7f4;border-radius:8px;margin-top:10px}
-.toast{position:fixed;bottom:24px;right:24px;background:#1a1a18;color:#fff;padding:10px 16px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.tbl th{font-weight:600;font-size:10px;color:#73726c;padding:5px 6px;text-align:right;border-bottom:1px solid #e8e6df;background:#f8f7f4;white-space:nowrap}
+.tbl th:first-child,.tbl th:nth-child(2){text-align:left}
+.tbl td{padding:5px 6px;text-align:right;border-bottom:1px solid #f1efe8;color:#1a1a18}
+.tbl td:first-child{text-align:left;color:#73726c;white-space:nowrap}
+.tbl td:nth-child(2){text-align:left}
+.tbl tr.sum td{font-weight:600;background:#f8f7f4;border-bottom:none}
+.warn-box{background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:10px 14px;font-size:11px;color:#412402;line-height:1.7}
+.note-box{background:#f8f7f4;border:1px solid #e8e6df;border-radius:8px;padding:10px 14px;font-size:11px;color:#73726c;line-height:1.7}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a18;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1}
 </style>
 </head>
 <body>
-
-<!-- ログイン画面 -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">GMVシミュレーター</div>
-    <div class="login-sub">パートナーファネル動態モデル</div>
-    <div class="login-field">
-      <label>ユーザー名</label>
-      <input type="text" id="login-user" placeholder="username" autocomplete="username">
-    </div>
-    <div class="login-field">
-      <label>パスワード</label>
-      <input type="password" id="login-pass" placeholder="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="login-btn" onclick="doLogin()">ログイン</button>
-    <div class="login-error" id="login-error"></div>
-  </div>
+<div class="w" id="capture-root">
+<div>
+  <h1 style="font-size:17px;font-weight:600;margin-bottom:2px">GMV予測モデル v7 — 中央値・ステージ別dormant率</h1>
+  <div style="font-size:11px;color:#73726c">G2:0% / G1:28% / G0:82% のステージ別実績dormant転換率を適用。v1/v2跨ぎ修正済み。</div>
 </div>
 
-<!-- メインアプリ -->
-<div id="app">
-<div class="w">
-
-<div style="display:flex;justify-content:space-between;align-items:flex-start">
-  <div>
-    <div style="font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:2px">GMVシミュレーター — パートナーファネル動態モデル</div>
-    <div style="font-size:12px;color:#73726c">S0〜S5のファネル × 既存ストック × チャーン × 休眠・復帰を統合した月次モデル（Q2〜Q4: 8ヶ月）</div>
-  </div>
-  <button class="btn btn-logout" onclick="doLogout()">ログアウト</button>
+<!-- ツールバー -->
+<div class="card" id="toolbar-card">
+<div class="ct">シナリオ保存 / URL共有 / PNG保存</div>
+<div class="toolbar">
+  <input type="text" id="scenario-name" placeholder="シナリオ名（例：楽観シナリオ）" maxlength="40">
+  <button class="btn btn-green" onclick="saveScenario()">💾 保存</button>
+  <button class="btn btn-purple" onclick="copyURL()">🔗 URLをコピー</button>
+  <button class="btn btn-blue" onclick="savePNG()">📷 PNG保存</button>
+  <button class="btn btn-gray" onclick="resetDefaults()">リセット</button>
+</div>
+<div class="share-url-box" id="share-url-box"></div>
+<div class="chip-row" id="chip-row"><span class="empty-hint">保存済みシナリオはありません</span></div>
 </div>
 
+<!-- 分布 -->
 <div class="card">
-  <div class="sec-title">シナリオの保存・読み込み</div>
-  <div class="save-bar">
-    <input type="text" id="save-name" placeholder="シナリオ名（例：楽観シナリオ・現状ベース）" maxlength="40">
-    <button class="btn btn-primary" onclick="saveScenario()">保存</button>
-    <button class="btn btn-secondary" onclick="togglePanel()">一覧を見る</button>
-    <button class="btn btn-secondary" onclick="exportJSON()">JSONエクスポート</button>
-    <label class="btn btn-secondary" style="display:inline-flex;align-items:center;cursor:pointer">
-      JSONインポート
-      <input type="file" accept=".json" onchange="importJSON(event)" style="display:none">
-    </label>
+<div class="ct">ステージ別 月間アポ数分布 + dormant実績（直近3ヶ月 2026.1〜3・G1判定修正後）</div>
+<div class="dist-grid">
+  <div class="dist-card" style="border-color:#378ADD">
+    <div class="dist-head" style="color:#185FA5">G2 エクスパンション <span style="font-size:9px;color:#73726c;font-weight:400">24社</span></div>
+    <div class="stat-row" style="background:#E6F1FB;margin:-2px -2px 4px;padding:3px 6px;border-radius:4px;border-bottom:none"><span class="stat-key" style="color:#185FA5;font-weight:600">判定基準</span><span class="stat-val" style="color:#185FA5">MA3が2ヶ月連続で上昇</span></div>
+    <div class="stat-row"><span class="stat-key">中央値 ★</span><span class="stat-val" style="color:#185FA5">94.0件 <span class="star-badge">基準値</span></span></div>
+    <div class="stat-row"><span class="stat-key">P25〜P75</span><span class="stat-val">39〜162件</span></div>
+    <div class="stat-row"><span class="stat-key">dormant転換率（実績）</span><span class="stat-val" style="color:#0F6E56">0.0% <span class="star-badge">実測</span></span></div>
+    <div class="stat-row"><span class="stat-key">1社あたり月GMV（中央値）</span><span class="stat-val" style="color:#185FA5">約313万円</span></div>
   </div>
-  <div id="saves-panel" style="display:none"><div id="saves-list"></div></div>
+  <div class="dist-card" style="border-color:#1D9E75">
+    <div class="dist-head" style="color:#085041">G1 アダプション <span style="font-size:9px;color:#73726c;font-weight:400">17社</span></div>
+    <div class="stat-row" style="background:#E1F5EE;margin:-2px -2px 4px;padding:3px 6px;border-radius:4px;border-bottom:none"><span class="stat-key" style="color:#085041;font-weight:600">判定基準</span><span class="stat-val" style="color:#085041">初回アポから3ヶ月以内に10件以上</span></div>
+    <div class="stat-row"><span class="stat-key">中央値 ★</span><span class="stat-val" style="color:#085041">16.3件 <span class="star-badge">基準値</span></span></div>
+    <div class="stat-row"><span class="stat-key">P25〜P75</span><span class="stat-val">7.7〜33.3件</span></div>
+    <div class="stat-row"><span class="stat-key">dormant転換率（実績）</span><span class="stat-val" style="color:#BA7517">28.0% <span class="star-badge">実測</span></span></div>
+    <div class="stat-row"><span class="stat-key">1社あたり月GMV（中央値）</span><span class="stat-val" style="color:#085041">約54万円</span></div>
+  </div>
+  <div class="dist-card" style="border-color:#EF9F27">
+    <div class="dist-head" style="color:#854F0B">G0 オンボーディング <span style="font-size:9px;color:#73726c;font-weight:400">4社</span></div>
+    <div class="stat-row" style="background:#FAEEDA;margin:-2px -2px 4px;padding:3px 6px;border-radius:4px;border-bottom:none"><span class="stat-key" style="color:#854F0B;font-weight:600">判定基準</span><span class="stat-val" style="color:#854F0B">商談1件以上登録されている</span></div>
+    <div class="stat-row"><span class="stat-key">中央値 ★</span><span class="stat-val" style="color:#854F0B">1.0件 <span class="star-badge">基準値</span></span></div>
+    <div class="stat-row"><span class="stat-key">P25〜P75</span><span class="stat-val">1〜2件</span></div>
+    <div class="stat-row"><span class="stat-key">dormant転換率（実績）</span><span class="stat-val" style="color:#D85A30">82.1% <span class="star-badge">実測</span></span></div>
+    <div class="stat-row"><span class="stat-key">1社あたり月GMV（中央値）</span><span class="stat-val" style="color:#854F0B">約3万円</span></div>
+  </div>
+</div>
 </div>
 
+<!-- シナリオ -->
 <div class="card">
-  <div class="gmv-hero">
-    <div style="font-size:11px;color:#73726c;margin-bottom:3px">予測GMV（年間・動態モデル）</div>
-    <div class="gmv-num" id="gmv-num">－</div>
-    <div class="gmv-gap" id="gmv-gap"></div>
-  </div>
-  <div class="prog-wrap"><div class="prog" id="prog" style="width:0%"></div></div>
-  <div class="prog-lbl" id="prog-lbl"></div>
-  <div class="gmv-split">
-    <div class="gmv-part" style="background:#E6F1FB">
-      <div style="font-size:10px;color:#185FA5;margin-bottom:3px">既存パートナー由来</div>
-      <div style="font-size:18px;font-weight:600;color:#185FA5" id="gmv-ex">－</div>
-      <div style="font-size:10px;color:#185FA5" id="gmv-ex-pct"></div>
-    </div>
-    <div class="gmv-part" style="background:#E1F5EE">
-      <div style="font-size:10px;color:#0F6E56;margin-bottom:3px">新規フロー由来</div>
-      <div style="font-size:18px;font-weight:600;color:#0F6E56" id="gmv-new">－</div>
-      <div style="font-size:10px;color:#0F6E56" id="gmv-new-pct"></div>
-    </div>
-  </div>
-  <div class="kpi6">
-    <div class="kpi"><div class="kpi-lbl">期末稼働P（S3〜5）</div><div class="kpi-val" id="k-act">－</div><div class="kpi-unit">社</div></div>
-    <div class="kpi"><div class="kpi-lbl">期末休眠A（実績あり）</div><div class="kpi-val" id="k-da" style="color:#854F0B">－</div><div class="kpi-unit">社</div></div>
-    <div class="kpi"><div class="kpi-lbl">期末休眠B（実績なし）</div><div class="kpi-val" id="k-db" style="color:#888780">－</div><div class="kpi-unit">社</div></div>
-    <div class="kpi"><div class="kpi-lbl">月間商談数（期末）</div><div class="kpi-val" id="k-appo">－</div><div class="kpi-unit">件/月</div></div>
-    <div class="kpi"><div class="kpi-lbl">累計チャーン→休眠</div><div class="kpi-val" id="k-churn" style="color:#D85A30">－</div><div class="kpi-unit">社</div></div>
-    <div class="kpi"><div class="kpi-lbl">月間GMV（期末）</div><div class="kpi-val" id="k-mgmv">－</div><div class="kpi-unit">万円</div></div>
-  </div>
+<div class="ct">シナリオ選択</div>
+<div class="tabs">
+  <div class="tab active-median" id="tab-median" onclick="setPreset('median')">中央値ベース（現実的）</div>
+  <div class="tab" id="tab-bull" onclick="setPreset('bull')">強気シナリオ</div>
+  <div class="tab" id="tab-bear" onclick="setPreset('bear')">弱気シナリオ</div>
+  <div class="tab" id="tab-custom" onclick="setPreset('custom')">カスタム</div>
+</div>
+<div class="scenario-desc desc-median" id="sc-desc">
+  <strong>中央値ベース（現実的）：</strong>G0=1件・G1=16件・G2=94件の中央値＋ステージ別実績dormant率（G2:0%・G1:28%・G0:82%）を適用。
 </div>
 
-<div class="card">
-  <div class="sec-title">期末ステージ分布（全パートナー）</div>
-  <div class="stage-map">
-    <div class="sm-box"><div class="sm-lbl">S0<br>登録のみ</div><div class="sm-val" id="sm-s0">－</div><div class="sm-unit">社</div></div>
-    <div class="sm-arr">→</div>
-    <div class="sm-box"><div class="sm-lbl">S2<br>マッチング</div><div class="sm-val" id="sm-s2">－</div><div class="sm-unit">社</div></div>
-    <div class="sm-arr">→</div>
-    <div class="sm-box"><div class="sm-lbl">S3<br>初稼働</div><div class="sm-val" id="sm-s3" style="color:#BA7517">－</div><div class="sm-unit">社</div></div>
-    <div class="sm-arr">→</div>
-    <div class="sm-box"><div class="sm-lbl">S4<br>定常</div><div class="sm-val" id="sm-s4">－</div><div class="sm-unit">社</div></div>
-    <div class="sm-arr">→</div>
-    <div class="sm-box" style="border-color:#1D9E75"><div class="sm-lbl">S5<br>拡張</div><div class="sm-val" id="sm-s5" style="color:#0F6E56">－</div><div class="sm-unit">社</div></div>
-  </div>
-  <div class="dormant-row">
-    <div class="sm-box" style="border-color:#BA7517">
-      <div class="sm-lbl">休眠A（稼働実績あり）</div>
-      <div class="sm-val" id="sm-da" style="color:#854F0B">－</div><div class="sm-unit">社</div>
-      <div class="dormant-badge">復帰施策の対象</div>
+<div class="slider-section">
+  <div class="slider-group">
+    <div class="sg-title">ステージ別 月間アポ/社</div>
+    <div class="sl-row">
+      <div class="sl-label">G2 月間アポ/社 <span id="lv-g2a">94</span>件</div>
+      <div class="sl-hint">中央値94件 / 平均131件 / P25〜P75: 39〜162件</div>
+      <input type="range" id="sl-g2a" min="20" max="200" step="1" value="94" oninput="onSlide()">
     </div>
-    <div class="sm-box">
-      <div class="sm-lbl">休眠B（稼働実績なし）</div>
-      <div class="sm-val" id="sm-db" style="color:#888780">－</div><div class="sm-unit">社</div>
-      <div style="font-size:9px;color:#73726c;margin-top:3px">再アプローチ or 切り捨て判断</div>
+    <div class="sl-row">
+      <div class="sl-label">G1 月間アポ/社 <span id="lv-g1a">16</span>件</div>
+      <div class="sl-hint">中央値16件 / 平均39件 / P25〜P75: 8〜33件</div>
+      <input type="range" id="sl-g1a" min="1" max="100" step="1" value="16" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">G0 月間アポ/社 <span id="lv-g0a">1</span>件</div>
+      <div class="sl-hint">中央値1件 / Trust Seed除く平均14件 / P75:2件</div>
+      <input type="range" id="sl-g0a" min="1" max="150" step="1" value="1" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">承認率 <span id="lv-apr">72</span>%</div>
+      <div class="sl-hint">実績 G2:72.1% / G1:73.3% / G0:76.4%</div>
+      <input type="range" id="sl-apr" min="60" max="85" step="1" value="72" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">平均単価（手数料込） <span id="lv-prc">46,000</span>円</div>
+      <div class="sl-hint">実績平均 46,214円 / 安定的</div>
+      <input type="range" id="sl-prc" min="40000" max="55000" step="500" value="46000" oninput="onSlide()">
     </div>
   </div>
-</div>
-
-<div class="card">
-  <div class="sec-title">月次推移（Q2〜Q4）</div>
-  <div style="overflow-x:auto">
-  <table class="tbl">
-    <thead><tr><th>月</th><th>S3</th><th>S4</th><th>S5</th><th>休眠A</th><th>休眠B</th><th>月アポ</th><th>GMV(万)</th></tr></thead>
-    <tbody id="tbl-body"></tbody>
-  </table>
-  </div>
-  <p class="note">※ 休眠A＝稼働実績あり（S3以上から離脱）、休眠B＝稼働実績なし（S0/S2止まり）</p>
-</div>
-
-<div class="two">
-  <div class="card">
-    <div class="sec-title">期初ストック（既存パートナー）</div>
-    <div class="sr"><div class="sh"><span class="sn">既存S5（拡張）</span><span class="sv" style="color:#185FA5"><span id="v-es5">10</span>社</span></div><input type="range" id="s-es5" min="0" max="100" step="5" value="10" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">既存S4（定常稼働）</span><span class="sv" style="color:#185FA5"><span id="v-es4">40</span>社</span></div><input type="range" id="s-es4" min="0" max="200" step="5" value="40" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">既存S3（初稼働）</span><span class="sv" style="color:#185FA5"><span id="v-es3">20</span>社</span></div><input type="range" id="s-es3" min="0" max="100" step="5" value="20" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">既存S2（マッチング）</span><span class="sv" style="color:#185FA5"><span id="v-es2">15</span>社</span></div><input type="range" id="s-es2" min="0" max="100" step="5" value="15" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">既存S0（登録のみ）</span><span class="sv" style="color:#185FA5"><span id="v-es0">30</span>社</span></div><input type="range" id="s-es0" min="0" max="200" step="5" value="30" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">既存 休眠A（実績あり）</span><span class="sv" style="color:#854F0B"><span id="v-eda">20</span>社</span></div><input type="range" id="s-eda" min="0" max="100" step="5" value="20" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">既存 休眠B（実績なし）</span><span class="sv" style="color:#888780"><span id="v-edb">10</span>社</span></div><input type="range" id="s-edb" min="0" max="100" step="5" value="10" oninput="calc()"></div>
-  </div>
-  <div class="card">
-    <div class="sec-title">新規フロー・転換率</div>
-    <div class="sr"><div class="sh"><span class="sn">月次新規登録数</span><span class="sv" style="color:#1D9E75"><span id="v-ns0">5</span>社/月</span></div><div class="sd">施策A・Dによる毎月の新規登録</div><input type="range" id="s-ns0" min="0" max="50" step="1" value="5" oninput="calc()"></div>
+  <div class="slider-group">
+    <div class="sg-title">ステージ別 dormant転換率（実績ベース）</div>
+    <div class="sl-row">
+      <div class="sl-label">G2 dormant転換率 <span id="lv-dr2">0</span>%/月 <span class="actual-val">実績0%</span></div>
+      <div class="sl-hint">v2稼働後の実測値。G2パートナーはほぼ離脱なし</div>
+      <input type="range" id="sl-dr2" min="0" max="20" step="1" value="0" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">G1 dormant転換率 <span id="lv-dr1">28</span>%/月 <span class="actual-val">実績28%</span></div>
+      <div class="sl-hint">v2稼働後の実測値。G1の約3割が休眠化</div>
+      <input type="range" id="sl-dr1" min="0" max="60" step="1" value="28" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">G0 dormant転換率 <span id="lv-dr0">82</span>%/月 <span class="actual-val">実績82%</span></div>
+      <div class="sl-hint">v2稼働後の実測値。G0の大半が定着前に離脱</div>
+      <input type="range" id="sl-dr0" min="0" max="100" step="1" value="82" oninput="onSlide()">
+    </div>
     <div class="divider"></div>
-    <div class="sr"><div class="sh"><span class="sn">S0→S2（月次転換率）</span><span class="sv"><span id="v-r02">20</span>%/月</span></div><input type="range" id="s-r02" min="1" max="100" step="1" value="20" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S2→S3（月次転換率）</span><span class="sv"><span id="v-r23">30</span>%/月</span></div><input type="range" id="s-r23" min="1" max="100" step="1" value="30" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S3→S4/S5（月次転換率）</span><span class="sv"><span id="v-r34">40</span>%/月</span></div><input type="range" id="s-r34" min="1" max="100" step="1" value="40" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S4→S5（月次転換率）</span><span class="sv"><span id="v-r45">5</span>%/月</span></div><input type="range" id="s-r45" min="0" max="100" step="1" value="5" oninput="calc()"></div>
-    <div class="divider"></div>
-    <div class="sr"><div class="sh"><span class="sn" style="color:#854F0B">休眠A→S3 復帰率</span><span class="sv"><span id="v-rda">10</span>%/月</span></div><div class="sd">復帰施策の効果</div><input type="range" id="s-rda" min="0" max="100" step="1" value="10" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn" style="color:#888780">休眠B→S0 復帰率</span><span class="sv"><span id="v-rdb">5</span>%/月</span></div><div class="sd">再アプローチによりS0に戻す</div><input type="range" id="s-rdb" min="0" max="100" step="1" value="5" oninput="calc()"></div>
+    <div class="sl-row">
+      <div class="sl-label">dormant復帰率（全体） <span id="lv-rr">10</span>%/月</div>
+      <div class="sl-hint">実績0〜33% / 平均11%</div>
+      <input type="range" id="sl-rr" min="0" max="30" step="1" value="10" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">新規G0獲得 <span id="lv-ng">1.5</span>社/月</div>
+      <div class="sl-hint">A0面談→マッチング→稼働化</div>
+      <input type="range" id="sl-ng" min="0" max="6" step="0.5" value="1.5" oninput="onSlide()">
+    </div>
   </div>
 </div>
 
-<div class="two">
-  <div class="card">
-    <div class="sec-title">離脱・ダウングレード率（月次）</div>
-    <div class="sr"><div class="sh"><span class="sn">S5→S4 ダウングレード率</span><span class="sv" style="color:#BA7517"><span id="v-d54">10</span>%/月</span></div><div class="sd">拡張が止まり定常稼働に戻る</div><input type="range" id="s-d54" min="0" max="100" step="1" value="10" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S5→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs5">3</span>%/月</span></div><div class="sd">拡張から完全停止→休眠A化</div><input type="range" id="s-cs5" min="0" max="100" step="1" value="3" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S4→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs4">5</span>%/月</span></div><div class="sd">定常稼働から休眠化</div><input type="range" id="s-cs4" min="0" max="100" step="1" value="5" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S3→休眠A チャーン率</span><span class="sv" style="color:#D85A30"><span id="v-cs3">20</span>%/月</span></div><div class="sd">初稼働で定着できず休眠化</div><input type="range" id="s-cs3" min="0" max="100" step="1" value="20" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S0/S2→休眠B 離脱率</span><span class="sv" style="color:#888780"><span id="v-cdb">5</span>%/月</span></div><div class="sd">稼働前に音沙汰なし→休眠B化</div><input type="range" id="s-cdb" min="0" max="100" step="1" value="5" oninput="calc()"></div>
-    <p class="note">※ 完全離脱はなくすべて休眠に蓄積。</p>
+<div class="slider-section" style="margin-bottom:0">
+  <div class="slider-group">
+    <div class="sg-title">閾値設定（ステージ転換基準）</div>
+    <div class="sl-row">
+      <div class="sl-label">G1判定：初回アポから <span id="lv-th-g1m">3</span> ヶ月以内に <span id="lv-th-g1n">10</span> 件以上</div>
+      <div class="sl-hint">実績ベース閾値。3ヶ月10件達成者の93%が継続</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+        <div>
+          <div style="font-size:9px;color:#73726c;margin-bottom:2px">判定期間（ヶ月）</div>
+          <input type="range" id="sl-th-g1m" min="1" max="6" step="1" value="3" oninput="onSlide()">
+        </div>
+        <div>
+          <div style="font-size:9px;color:#73726c;margin-bottom:2px">必要件数</div>
+          <input type="range" id="sl-th-g1n" min="3" max="30" step="1" value="10" oninput="onSlide()">
+        </div>
+      </div>
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">G2判定：MA <span id="lv-th-g2w">3</span> ヶ月移動平均が <span id="lv-th-g2c">2</span> ヶ月連続上昇</div>
+      <div class="sl-hint">月次ブレが大きいため移動平均を採用</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+        <div>
+          <div style="font-size:9px;color:#73726c;margin-bottom:2px">移動平均窓（ヶ月）</div>
+          <input type="range" id="sl-th-g2w" min="1" max="6" step="1" value="3" oninput="onSlide()">
+        </div>
+        <div>
+          <div style="font-size:9px;color:#73726c;margin-bottom:2px">連続上昇月数</div>
+          <input type="range" id="sl-th-g2c" min="1" max="4" step="1" value="2" oninput="onSlide()">
+        </div>
+      </div>
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">dormant判定：最終アポから <span id="lv-th-dm">60</span> 日以上アポなし</div>
+      <div class="sl-hint">現在設定値60日</div>
+      <input type="range" id="sl-th-dm" min="30" max="180" step="10" value="60" oninput="onSlide()">
+    </div>
   </div>
-  <div class="card">
-    <div class="sec-title">GMVレバー / パートナー生産性</div>
-    <div class="sr"><div class="sh"><span class="sn">目標GMV</span><span class="sv"><span id="v-target">24</span>億円</span></div><input type="range" id="s-target" min="5" max="50" step="1" value="24" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">平均単価</span><span class="sv"><span id="v-price">3</span>万円</span></div><div class="sd">1商談あたりの手数料込み単価</div><input type="range" id="s-price" min="1" max="20" step="0.5" value="3" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">承認率</span><span class="sv"><span id="v-approve">30</span>%</span></div><div class="sd">登録商談のうち承認される割合</div><input type="range" id="s-approve" min="1" max="100" step="1" value="30" oninput="calc()"></div>
-    <div class="divider"></div>
-    <div class="sr"><div class="sh"><span class="sn">S3 月間アポ/社</span><span class="sv" style="color:#BA7517"><span id="v-a3">5</span>件</span></div><div class="sd">初稼働（立ち上がり期）</div><input type="range" id="s-a3" min="1" max="40" step="1" value="5" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S4 月間アポ/社</span><span class="sv"><span id="v-a4">15</span>件</span></div><div class="sd">定常稼働</div><input type="range" id="s-a4" min="1" max="80" step="1" value="15" oninput="calc()"></div>
-    <div class="sr"><div class="sh"><span class="sn">S5 月間アポ/社</span><span class="sv" style="color:#0F6E56"><span id="v-a5">30</span>件</span></div><div class="sd">拡張稼働</div><input type="range" id="s-a5" min="1" max="150" step="1" value="30" oninput="calc()"></div>
+  <div class="slider-group">
+    <div class="sg-title">ステージ転換率（月次）</div>
+    <div class="sl-row">
+      <div class="sl-label">G0→G1 転換率 <span id="lv-t01">18</span>%/月</div>
+      <div class="sl-hint">3ヶ月10件クリアで転換（G0の残存率から逆算）</div>
+      <input type="range" id="sl-t01" min="5" max="80" step="1" value="18" oninput="onSlide()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">G1→G2 転換率 <span id="lv-t12">15</span>%/月</div>
+      <div class="sl-hint">MA3が2ヶ月連続上昇で転換</div>
+      <input type="range" id="sl-t12" min="5" max="50" step="1" value="15" oninput="onSlide()">
+    </div>
   </div>
 </div>
+</div>
 
+<!-- テーブル -->
+<div class="card">
+<div class="ct">月次予測（2026年4〜11月）— ステージ別社数</div>
+<div style="overflow-x:auto">
+<table class="tbl">
+<thead><tr>
+  <th style="text-align:left">月</th>
+  <th style="text-align:left">季節</th>
+  <th>G2社</th><th>G1社</th><th>G0社</th>
+  <th>dormant転換</th>
+  <th>dormant復帰</th>
+  <th>予測GMV(万)</th>
+  <th>月次目標(万)</th>
+  <th>過不足(万)</th>
+  <th>累計(億)</th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+<!-- KPI -->
+<div class="card">
+<div class="ct">年間GMV予測サマリー</div>
+<div class="kpi4" id="kpis"></div>
+</div>
+
+<div class="warn-box">
+<strong>平均値ベース（参考）：</strong>G2:131件・G1:39件・G0:18件の平均値で試算すると年間約17〜18億円。ただしG2平均はTrust Seed（月547件）が引き上げており、Trust Seedの離脱でこの数値は急落する。中央値ベースが実態に近い。
+</div>
+<div class="note-box">
+<strong>モデルの前提と限界</strong><br>
+✅ G2:0% / G1:28% / G0:82% のステージ別実績dormant率を適用（v2稼働後2025.6〜2026.3実測）<br>
+✅ 8月▲22%・9月+35%の季節補正（2025年実績）<br>
+✅ 閾値（G1判定期間・G2判定窓・dormant判定日数）をスライダーで調整可能<br>
+⚠️ G0のdormant率82%は「稼働前の広義G0含む」実測値。純粋な初稼働P0に限ると異なる可能性あり<br>
+⚠️ 単価・承認率はメーカーミックス変化により変動する可能性あり
 </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-/* 認証 */
-const AUTH_KEY='gmv_auth';
-const CRED={user:'taaan',pass:'kaen55taaan'};
+const CUMULATIVE=49442,TARGET=240000;
+const MONTHLY_TARGET=Math.round((TARGET-CUMULATIVE)/8);
+const MONTHS=['4月','5月','6月','7月','8月','9月','10月','11月'];
+const SEASONAL=[1.00,1.02,1.05,1.02,0.78,1.10,1.00,0.95];
+const STORAGE_KEY='gmv_v7_scenarios';
 
-function doLogin(){
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
-  if(u===CRED.user&&p===CRED.pass){
-    sessionStorage.setItem(AUTH_KEY,'1');
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    calc();
-  }else{
-    const err=document.getElementById('login-error');
-    err.textContent='ユーザー名またはパスワードが正しくありません';
-    document.getElementById('login-pass').value='';
-    setTimeout(()=>err.textContent='',3000);
-  }
-}
+const SLIDERS=['g2a','g1a','g0a','apr','prc','dr2','dr1','dr0','rr','ng','t01','t12','th-g1m','th-g1n','th-g2w','th-g2c','th-dm'];
 
-function doLogout(){
-  sessionStorage.removeItem(AUTH_KEY);
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-}
+const PRESETS={
+  median:{g2a:94,g1a:16,g0a:1,apr:72,prc:46000,dr2:0,dr1:28,dr0:82,rr:10,ng:1.5,t01:18,t12:15,'th-g1m':3,'th-g1n':10,'th-g2w':3,'th-g2c':2,'th-dm':60,
+    desc:'<strong>中央値ベース（現実的）：</strong>G0=1件・G1=16件・G2=94件の中央値＋ステージ別実績dormant率（G2:0%・G1:28%・G0:82%）を適用。',cls:'desc-median'},
+  bull:{g2a:113,g1a:39,g0a:14,apr:75,prc:47000,dr2:0,dr1:15,dr0:60,rr:18,ng:3,t01:30,t12:25,'th-g1m':3,'th-g1n':10,'th-g2w':3,'th-g2c':2,'th-dm':60,
+    desc:'<strong>強気シナリオ：</strong>dormant率改善（G1:15%・G0:60%）、復帰率18%、新規G0月3社。G0はTrust Seed除く平均値（14件）採用。',cls:'desc-bull'},
+  bear:{g2a:39,g1a:7,g0a:1,apr:68,prc:44000,dr2:5,dr1:40,dr0:90,rr:5,ng:0.5,t01:10,t12:8,'th-g1m':3,'th-g1n':10,'th-g2w':3,'th-g2c':2,'th-dm':60,
+    desc:'<strong>弱気シナリオ：</strong>G2=P25水準（39件）・G1=P25水準（7件）、dormant悪化（G2:5%・G1:40%・G0:90%）。',cls:'desc-bear'},
+  custom:{g2a:94,g1a:16,g0a:1,apr:72,prc:46000,dr2:0,dr1:28,dr0:82,rr:10,ng:1.5,t01:18,t12:15,'th-g1m':3,'th-g1n':10,'th-g2w':3,'th-g2c':2,'th-dm':60,
+    desc:'<strong>カスタム：</strong>各スライダーを自由に調整できます。',cls:'desc-custom'}
+};
 
-if(sessionStorage.getItem(AUTH_KEY)==='1'){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-}
+let current='median';
 
-/* シミュレーター */
-const IDS=['es5','es4','es3','es2','es0','eda','edb','ns0','r02','r23','r34','r45','d54','cs3','cs4','cs5','cdb','rda','rdb','target','price','approve','a3','a4','a5'];
-const KEY='taaan_gmv_scenarios';
 function n(id){return document.getElementById(id)}
-function rv(id){return +n('s-'+id).value}
-function rnd(v){return Math.max(0,Math.round(v))}
-function toast(msg){const t=n('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
-function getAll(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{}}}
-function setAll(d){localStorage.setItem(KEY,JSON.stringify(d))}
-function getValues(){const v={};IDS.forEach(id=>v[id]=rv(id));return v}
-function applyValues(vals){IDS.forEach(id=>{if(vals[id]!=null){n('s-'+id).value=vals[id];n('v-'+id).textContent=vals[id]}});calc()}
-function saveScenario(){
-  const name=n('save-name').value.trim();
-  if(!name){toast('シナリオ名を入力してください');return}
-  const all=getAll();
-  all[name]={values:getValues(),at:new Date().toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})};
-  setAll(all);n('save-name').value='';
-  toast(`「${name}」を保存しました`);
-  if(n('saves-panel').style.display!=='none')renderList();
-}
-function togglePanel(){const p=n('saves-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')renderList()}
-function renderList(){
-  const all=getAll(),keys=Object.keys(all),el=n('saves-list');
-  if(!keys.length){el.innerHTML='<div class="empty-state">保存されたシナリオはまだありません</div>';return}
-  el.innerHTML='<div class="saves-list">'+keys.map(k=>`<div class="save-item"><span class="save-item-name">${k}</span><span class="save-item-date">${all[k].at||''}</span><div style="display:flex;gap:6px"><button class="btn btn-load" onclick="load('${k}')">読み込む</button><button class="btn btn-danger" onclick="del('${k}')">削除</button></div></div>`).join('')+'</div>';
-}
-function load(name){const all=getAll();if(!all[name])return;applyValues(all[name].values);toast(`「${name}」を読み込みました`)}
-function del(name){const all=getAll();delete all[name];setAll(all);toast(`「${name}」を削除しました`);renderList()}
-function exportJSON(){
-  const name=n('save-name').value.trim()||'無題シナリオ';
-  const blob=new Blob([JSON.stringify({name,exportedAt:new Date().toISOString(),values:getValues()},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`gmv_${name}.json`;a.click();toast('JSONをエクスポートしました');
-}
-function importJSON(e){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.values)throw 0;applyValues(d.values);toast(`「${d.name||'データ'}」を読み込みました`)}catch{toast('読み込みに失敗しました')}};
-  r.readAsText(f);e.target.value='';
-}
-function calc(){
-  const target=rv('target'),price=rv('price'),apr=rv('approve')/100;
-  const a3=rv('a3'),a4=rv('a4'),a5=rv('a5');
-  const es0=rv('es0'),es2=rv('es2'),es3=rv('es3'),es4=rv('es4'),es5=rv('es5');
-  const eda=rv('eda'),edb=rv('edb'),ns0=rv('ns0');
-  const ro2=rv('r02')/100,r23=rv('r23')/100,r34=rv('r34')/100,r45=rv('r45')/100;
-  const d54=rv('d54')/100,cs3=rv('cs3')/100,cs4=rv('cs4')/100,cs5=rv('cs5')/100;
-  const cdb=rv('cdb')/100,rda=rv('rda')/100,rdb=rv('rdb')/100;
-  IDS.forEach(id=>{const e=n('v-'+id);if(e)e.textContent=rv(id)});
-  let s0=es0,s2=es2,s3=es3,s4=es4,s5=es5,da=eda,db=edb;
-  let totalGMV=0,totalChurn=0,exGMV=0;
-  let exS3=es3,exS4=es4,exS5=es5,exDA=eda;
-  const rows=[],months=['4月','5月','6月','7月','8月','9月','10月','11月'];
-  for(let m=0;m<8;m++){
-    s0+=ns0;
-    const retDA=rnd(da*rda),retDB=rnd(db*rdb);
-    da-=retDA;db-=retDB;s3+=retDA;s0+=retDB;
-    const c02=rnd(s0*ro2),c23=rnd(s2*r23),c34=rnd(s3*r34),c45=rnd(s4*r45);
-    const down54=rnd(s5*d54),ch3=rnd(s3*cs3),ch4=rnd(s4*cs4),ch5=rnd(s5*cs5);
-    const chDB=rnd((s0+s2)*cdb);
-    s0=Math.max(0,rnd(s0-c02-chDB/2));s2=Math.max(0,rnd(s2+c02-c23-chDB/2));
-    s3=Math.max(0,rnd(s3+c23-c34-ch3));s4=Math.max(0,rnd(s4+c34+down54-c45-ch4));
-    s5=Math.max(0,rnd(s5+c45-down54-ch5));
-    da=Math.max(0,rnd(da+ch3+ch4+ch5));db=Math.max(0,rnd(db+chDB));
-    totalChurn+=ch3+ch4+ch5;
-    const exRetDA=rnd(exDA*rda);exDA-=exRetDA;exS3+=exRetDA;
-    const exDown=rnd(exS5*d54),exCh3=rnd(exS3*cs3),exCh4=rnd(exS4*cs4),exCh5=rnd(exS5*cs5);
-    exS3=Math.max(0,rnd(exS3+rnd(exS3*r34)-exCh3));
-    exS4=Math.max(0,rnd(exS4+exDown-rnd(exS4*r45)-exCh4));
-    exS5=Math.max(0,rnd(exS5+rnd(exS4*r45)-exDown-exCh5));
-    exDA=Math.max(0,rnd(exDA+exCh3+exCh4+exCh5));
-    const appo=s3*a3+s4*a4+s5*a5,gmv=appo*apr*price;
-    totalGMV+=gmv;exGMV+=(exS3*a3+exS4*a4+exS5*a5)*apr*price;
-    rows.push({m:months[m],s3:rnd(s3),s4:rnd(s4),s5:rnd(s5),da:rnd(da),db:rnd(db),appo:rnd(appo),gmv:rnd(gmv)});
-  }
-  const ag=totalGMV/1e4,ex=exGMV/1e4,nw=ag-ex,last=rows[rows.length-1];
-  n('gmv-num').textContent=ag.toFixed(2)+' 億円';
-  const gap=ag-target;
-  n('gmv-gap').textContent=gap>=0?'▲ 目標を '+Math.abs(gap).toFixed(2)+' 億円 上回る':'▼ 目標まで '+Math.abs(gap).toFixed(2)+' 億円 不足';
-  n('gmv-gap').style.color=gap>=0?'#0F6E56':'#993C1D';
-  const p=Math.min(ag/target*100,100);
-  n('prog').style.width=p+'%';n('prog').style.background=p>=100?'#1D9E75':p>=70?'#BA7517':'#D85A30';
-  n('prog-lbl').textContent=(ag/target*100).toFixed(1)+'% 達成見込み（目標: '+target+'億円）';
-  n('gmv-ex').textContent=ex.toFixed(2)+' 億円';n('gmv-new').textContent=nw.toFixed(2)+' 億円';
-  n('gmv-ex-pct').textContent=ag>0?rnd(ex/ag*100)+'%':'－';n('gmv-new-pct').textContent=ag>0?rnd(nw/ag*100)+'%':'－';
-  n('k-act').textContent=(last.s3+last.s4+last.s5).toLocaleString();
-  n('k-da').textContent=last.da.toLocaleString();n('k-db').textContent=last.db.toLocaleString();
-  n('k-appo').textContent=last.appo.toLocaleString();n('k-churn').textContent=totalChurn.toLocaleString();
-  n('k-mgmv').textContent=last.gmv.toLocaleString();
-  n('sm-s0').textContent=rnd(s0);n('sm-s2').textContent=rnd(s2);
-  n('sm-s3').textContent=last.s3;n('sm-s4').textContent=last.s4;n('sm-s5').textContent=last.s5;
-  n('sm-da').textContent=last.da;n('sm-db').textContent=last.db;
-  const tb=n('tbl-body');tb.innerHTML='';
-  rows.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.m}</td><td style="color:#BA7517">${r.s3}</td><td>${r.s4}</td><td style="color:#0F6E56">${r.s5}</td><td style="color:#854F0B">${r.da}</td><td style="color:#888780">${r.db}</td><td>${r.appo.toLocaleString()}</td><td>${r.gmv.toLocaleString()}</td>`;
-    tb.appendChild(tr);
+function showToast(msg){const t=n('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+function getVals(){const v={};SLIDERS.forEach(k=>{const el=n('sl-'+k);if(el)v[k]=+el.value});return v}
+function applyVals(v){SLIDERS.forEach(k=>{const el=n('sl-'+k);if(el&&v[k]!=null)el.value=v[k]});updateAll()}
+
+function setPreset(key){
+  current=key;
+  ['median','bull','bear','custom'].forEach(k=>{
+    n('tab-'+k).className='tab'+(k===key?' active-'+k:'');
   });
-  const sum=document.createElement('tr');
-  sum.innerHTML=`<td>累計</td><td>－</td><td>－</td><td>－</td><td>－</td><td>－</td><td>－</td><td style="color:#0F6E56">${rnd(totalGMV).toLocaleString()}</td>`;
-  tb.appendChild(sum);
+  if(key!=='custom'){
+    const p=PRESETS[key];
+    SLIDERS.forEach(k=>{const el=n('sl-'+k);if(el&&p[k]!=null)el.value=p[k]});
+  }
+  const desc=n('sc-desc');
+  desc.innerHTML=PRESETS[key].desc;
+  desc.className='scenario-desc '+PRESETS[key].cls;
+  updateAll();
 }
+
+function onSlide(){
+  if(current!=='custom'){
+    current='custom';
+    ['median','bull','bear','custom'].forEach(k=>{
+      n('tab-'+k).className='tab'+(k==='custom'?' active-custom':'');
+    });
+    n('sc-desc').innerHTML=PRESETS.custom.desc;
+    n('sc-desc').className='scenario-desc desc-custom';
+  }
+  updateAll();
+}
+
+function updateAll(){
+  const g2a=+n('sl-g2a').value,g1a=+n('sl-g1a').value,g0a=+n('sl-g0a').value;
+  const apr=+n('sl-apr').value/100,prc=+n('sl-prc').value;
+  const dr2=+n('sl-dr2').value/100,dr1=+n('sl-dr1').value/100,dr0=+n('sl-dr0').value/100;
+  const rr=+n('sl-rr').value/100,ng=+n('sl-ng').value;
+  const t01=+n('sl-t01').value/100,t12=+n('sl-t12').value/100;
+  const thG1m=+n('sl-th-g1m').value,thG1n=+n('sl-th-g1n').value;
+  const thG2w=+n('sl-th-g2w').value,thG2c=+n('sl-th-g2c').value;
+  const thDm=+n('sl-th-dm').value;
+
+  // ラベル更新
+  n('lv-g2a').textContent=g2a;n('lv-g1a').textContent=g1a;n('lv-g0a').textContent=g0a;
+  n('lv-apr').textContent=+n('sl-apr').value;
+  n('lv-prc').textContent=(+n('sl-prc').value).toLocaleString();
+  n('lv-dr2').textContent=+n('sl-dr2').value;n('lv-dr1').textContent=+n('sl-dr1').value;n('lv-dr0').textContent=+n('sl-dr0').value;
+  n('lv-rr').textContent=+n('sl-rr').value;n('lv-ng').textContent=ng;
+  n('lv-t01').textContent=+n('sl-t01').value;n('lv-t12').textContent=+n('sl-t12').value;
+  n('lv-th-g1m').textContent=thG1m;n('lv-th-g1n').textContent=thG1n;
+  n('lv-th-g2w').textContent=thG2w;n('lv-th-g2c').textContent=thG2c;
+  n('lv-th-dm').textContent=thDm;
+
+  const gpG2=g2a*apr*prc/10000,gpG1=g1a*apr*prc/10000,gpG0=g0a*apr*prc/10000;
+  let g2=24,g1=17,g0=4,dormG=30;
+  let cum=CUMULATIVE,total=0;
+  const tbody=n('tbody');tbody.innerHTML='';
+
+  MONTHS.forEach((m,i)=>{
+    const to_g2=Math.round(g1*t12);
+    const to_g1=Math.round(g0*t01);
+    const ret=Math.round(dormG*rr);
+    const ndG2=Math.round(g2*dr2);
+    const ndG1=Math.round(g1*dr1);
+    const ndG0=Math.round(g0*dr0);
+    const totalDorm=ndG2+ndG1+ndG0;
+
+    const nG2=Math.max(0,g2-ndG2+to_g2);
+    const nG1=Math.max(0,g1-ndG1+to_g1-to_g2);
+    const nG0=Math.max(0,g0-ndG0-to_g1+ret+ng);
+    const nDorm=Math.max(0,dormG+totalDorm-ret);
+
+    const adj=SEASONAL[i];
+    const baseGmv=nG2*gpG2+nG1*gpG1+nG0*gpG0;
+    const adjGmv=Math.round(baseGmv*adj);
+    const diff=adjGmv-MONTHLY_TARGET;
+    cum+=adjGmv;total+=adjGmv;
+
+    const gmvColor=adjGmv>=MONTHLY_TARGET?'#0F6E56':adjGmv>=MONTHLY_TARGET*0.7?'#BA7517':'#D85A30';
+    const isSeasLow=adj<0.9;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      `<td>${m}${isSeasLow?'<span style="color:#D85A30;font-size:9px"> ★</span>':''}</td>`+
+      `<td style="color:${adj<1?'#D85A30':'#73726c'};font-size:10px">${adj>=1?'+':''}${Math.round((adj-1)*100)}%</td>`+
+      `<td style="color:#185FA5;font-weight:600">${Math.round(nG2)}</td>`+
+      `<td style="color:#0F6E56">${Math.round(nG1)}</td>`+
+      `<td style="color:#854F0B">${Math.round(nG0)}</td>`+
+      `<td style="color:#D85A30">▼${totalDorm}</td>`+
+      `<td style="color:#0F6E56">▲${ret}</td>`+
+      `<td style="font-weight:600;color:${gmvColor}">${adjGmv.toLocaleString()}</td>`+
+      `<td style="color:#73726c">${MONTHLY_TARGET.toLocaleString()}</td>`+
+      `<td style="color:${diff>=0?'#0F6E56':'#D85A30'};font-weight:600">${diff>=0?'+':'▲'}${Math.abs(diff).toLocaleString()}</td>`+
+      `<td style="color:${cum>=TARGET?'#0F6E56':'#1a1a18'}">${(cum/10000).toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+
+    g2=Math.round(nG2);g1=Math.round(nG1);g0=Math.round(nG0);dormG=Math.round(nDorm);
+  });
+
+  const sumTr=document.createElement('tr');sumTr.className='sum';
+  sumTr.innerHTML=`<td>4〜11月計</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${total.toLocaleString()}</td><td>${(MONTHLY_TARGET*8).toLocaleString()}</td><td>—</td><td>—</td>`;
+  tbody.appendChild(sumTr);
+
+  const annual=CUMULATIVE+total,gap=annual-TARGET;
+  n('kpis').innerHTML=
+    `<div class="kpi"><div class="kl">今期累計実績（12〜3月）</div><div class="kv">4.9億</div><div class="ks">49,442万円</div></div>`+
+    `<div class="kpi"><div class="kl">4〜11月 予測GMV</div><div class="kv">${(total/10000).toFixed(1)}億</div><div class="ks">月平均${(total/8/10000).toFixed(2)}億</div></div>`+
+    `<div class="kpi"><div class="kl">今期年間予測</div><div class="kv" style="color:${annual>=TARGET?'#0F6E56':'#1a1a18'}">${(annual/10000).toFixed(1)}億</div><div class="ks">目標24億</div></div>`+
+    `<div class="kpi"><div class="kl">目標との乖離</div><div class="kv" style="color:${gap>=0?'#0F6E56':'#D85A30'}">${gap>=0?'+':'▲'}${Math.abs(gap/10000).toFixed(1)}億</div><div class="ks">達成率 ${Math.round(annual/TARGET*100)}%</div></div>`;
+}
+
+/* ===== シナリオ保存 ===== */
+function getScenarios(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return{}}}
+function setScenarios(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
+
+function saveScenario(){
+  const name=n('scenario-name').value.trim();
+  if(!name){showToast('シナリオ名を入力してください');return}
+  const s=getScenarios();s[name]=getVals();setScenarios(s);
+  renderChips(name);showToast(`「${name}」を保存しました`);
+}
+
+function loadScenario(name){
+  const s=getScenarios();if(!s[name])return;
+  current='custom';
+  ['median','bull','bear','custom'].forEach(k=>n('tab-'+k).className='tab'+(k==='custom'?' active-custom':''));
+  n('sc-desc').innerHTML=PRESETS.custom.desc;n('sc-desc').className='scenario-desc desc-custom';
+  n('scenario-name').value=name;
+  applyVals(s[name]);renderChips(name);showToast(`「${name}」を読み込みました`);
+}
+
+function deleteScenario(name){
+  const s=getScenarios();delete s[name];setScenarios(s);
+  if(n('scenario-name').value===name)n('scenario-name').value='';
+  renderChips(null);showToast(`「${name}」を削除しました`);
+}
+
+function renderChips(activeName){
+  const s=getScenarios(),names=Object.keys(s),c=n('chip-row');
+  if(!names.length){c.innerHTML='<span class="empty-hint">保存済みシナリオはありません</span>';return}
+  c.innerHTML=names.map(nm=>`<div class="chip${nm===activeName?' active':''}" onclick="loadScenario('${nm.replace(/'/g,"\\'")}')">
+    ${nm}<span class="chip-del" onclick="event.stopPropagation();deleteScenario('${nm.replace(/'/g,"\\'")}')">✕</span>
+  </div>`).join('');
+}
+
+/* ===== URL共有 ===== */
+function buildURL(){
+  const params=new URLSearchParams();
+  SLIDERS.forEach(k=>{const el=n('sl-'+k);if(el)params.set(k,el.value)});
+  const nm=n('scenario-name').value.trim();if(nm)params.set('name',nm);
+  return location.origin+location.pathname+'?'+params.toString();
+}
+
+function copyURL(){
+  const url=buildURL();
+  navigator.clipboard.writeText(url).then(()=>{
+    const box=n('share-url-box');box.textContent=url;box.style.display='block';
+    showToast('URLをコピーしました');
+  }).catch(()=>{
+    const box=n('share-url-box');box.textContent=url;box.style.display='block';
+    showToast('URLを手動でコピーしてください');
+  });
+}
+
+function loadFromURL(){
+  const params=new URLSearchParams(location.search);
+  if(!params.has('g2a'))return;
+  const v={};SLIDERS.forEach(k=>{if(params.has(k))v[k]=+params.get(k)});
+  const nm=params.get('name');if(nm)n('scenario-name').value=nm;
+  current='custom';
+  ['median','bull','bear','custom'].forEach(k=>n('tab-'+k).className='tab'+(k==='custom'?' active-custom':''));
+  n('sc-desc').innerHTML=PRESETS.custom.desc;n('sc-desc').className='scenario-desc desc-custom';
+  applyVals(v);showToast('URLからシナリオを読み込みました');
+}
+
+/* ===== PNG保存 ===== */
+async function savePNG(){
+  n('toolbar-card').style.display='none';
+  try{
+    const canvas=await html2canvas(n('capture-root'),{scale:2,useCORS:true,backgroundColor:'#f8f7f4',logging:false,windowWidth:1020});
+    const now=new Date(),pad=v=>String(v).padStart(2,'0');
+    const fname=`gmv-forecast-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}.png`;
+    const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download=fname;a.click();
+    showToast('PNGを保存しました');
+  }catch(e){showToast('PNG保存に失敗しました');console.error(e);}
+  finally{n('toolbar-card').style.display='';}
+}
+
+function resetDefaults(){
+  n('scenario-name').value='';
+  n('share-url-box').style.display='none';
+  setPreset('median');showToast('デフォルト値にリセットしました');
+}
+
+renderChips(null);
+loadFromURL();
+updateAll();
 </script>
 </body>
 </html>
